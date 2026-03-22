@@ -1,7 +1,0 @@
-target/
-*.jar
-*.log
-*.sql
-*.zip
-.idea/
-.vscode/
