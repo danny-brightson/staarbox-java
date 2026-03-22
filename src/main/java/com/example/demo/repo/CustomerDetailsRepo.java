@@ -27,8 +27,11 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	@Transactional
 	@Modifying
 	@Query(value = "UPDATE customerdetails SET  PackDetailsId = :packDetailsId,CustomerStatusId =:CustomerStatus WHERE id = :id AND StatusId = 1", nativeQuery = true)
-	int updatePackDetails( int packDetailsId, Long id, int CustomerStatus);
-
+	int updatePackDetails(
+		@Param("packDetailsId") int packDetailsId,
+		@Param("id") Long id,
+		@Param("CustomerStatus") int CustomerStatus
+	);
 
 	@Modifying
 	@Transactional
@@ -160,6 +163,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 		@Query(value = "SELECT paymentDoneTime  FROM customerdetails WHERE IsRenewed = 0 AND id =:customerId AND IsPaymentSuccess = 1 and StatusId=1;", nativeQuery = true)
 		LocalDateTime  checkCustomaizationEnable(int customerId);
 
+		
 
 		@Modifying
 		@Transactional
@@ -193,7 +197,18 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 				)
 		List<Integer> getPendingCustomerid(String phoneNumber);
 
-
+		@Modifying
+		@Transactional
+		@Query(value = """
+			UPDATE customerdetails
+			SET StatusId = 2,
+				ModefiedTime = CURRENT_TIMESTAMP,
+				ModefiedBy = 'system'
+			WHERE NextRenewalDate < CURRENT_DATE
+			AND IsPaymentSuccess = 1
+			AND StatusId = 1
+			""", nativeQuery = true)
+		void cancelExpiredSubscriptions();
 		
 		
 		@Modifying
@@ -274,7 +289,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 			CustomerPackDistrictProjection 
 			findPackAndDistrictByCustomerId(Long customerId);
 
-	@Query(value = "SELECT customized_amount FROM customerdetails WHERE Id = :customerId AND DATE(ModefiedTime) = CURDATE() - INTERVAL 1 DAY", nativeQuery = true)
+			@Query(value = "SELECT customized_amount FROM customerdetails WHERE Id = :customerId AND DATE(ModefiedTime) = CURDATE() - INTERVAL 1 DAY", nativeQuery = true)
 			Long getYesterdayCustomizedAmount(@Param("customerId") Long customerId);
 
 			@Query(value = "SELECT PackDetailsId FROM customerdetails WHERE Id = :customerId", nativeQuery = true)
@@ -289,7 +304,11 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 @Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
 	LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
 
-}
+	@Transactional
+	@Modifying
+	@Query("UPDATE CustomerDetails c SET c.packDetailsId = :packId WHERE c.id = :customerId")
+	void updatePackDirect(@Param("customerId") Long customerId,
+						@Param("packId") Long packId);
 
 
 }

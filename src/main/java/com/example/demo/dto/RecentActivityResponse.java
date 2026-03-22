@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 
 public class RecentActivityResponse {
 
-    private Long lastPaidAmount;
+    private BigDecimal lastPaidAmount;
     private LocalDateTime lastPaymentDate;
     private LocalDateTime lastCustomaizedDate;
     private LocalDateTime RenewedDate;
 
-    public RecentActivityResponse(Long lastPaidAmount,
+    public RecentActivityResponse(BigDecimal lastPaidAmount,
                                   LocalDateTime lastPaymentDate,
                                   LocalDateTime lastCustomaizedDate,
                                   LocalDateTime RenewedDate) {
@@ -21,12 +21,12 @@ public class RecentActivityResponse {
   }
 
     // Getters
-    public Long getLastPaidAmount() { return lastPaidAmount; }
+    public BigDecimal getLastPaidAmount() { return lastPaidAmount; }
     public LocalDateTime getLastPaymentDate() { return lastPaymentDate; }
     public LocalDateTime getLastCustomaizedDate() { return lastCustomaizedDate; }
     public LocalDateTime getRenewedDate() { return RenewedDate; }
 
-	public void setLastPaidAmount(Long lastPaidAmount) {
+	public void setLastPaidAmount(BigDecimal lastPaidAmount) {
 		this.lastPaidAmount = lastPaidAmount;
 	}
 

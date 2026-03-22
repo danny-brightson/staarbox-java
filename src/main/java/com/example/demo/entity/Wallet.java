@@ -32,13 +32,19 @@ public class Wallet {
     private LocalDateTime lastCustomaizedDate;
     
     @Column(name = "lastpaidAmount")
-    private Long lastpaidAmount;
+    private BigDecimal lastpaidAmount;
+    
+    @Column(name = "LastCustomizedAmount")
+    private BigDecimal LastCustomizedAmount;
 
-    // 🔹 Constructors
+    
+    
+
+    // ?? Constructors
     public Wallet() {
     }
 
-    // 🔹 Getters & Setters
+    // ?? Getters & Setters
     public Long getId() {
         return id;
     }
@@ -79,16 +85,16 @@ public class Wallet {
 		this.lastCustomaizedDate = lastCustomaizedDate;
 	}
 
-	public Long getLastpaidAmount() {
+	public BigDecimal getLastpaidAmount() {
 		return lastpaidAmount;
 	}
 
-	public void setLastpaidAmount(Long lastpaidAmount) {
+	public void setLastpaidAmount(BigDecimal lastpaidAmount) {
 		this.lastpaidAmount = lastpaidAmount;
 	}
 
 	public Wallet(Long id, Long customerId, BigDecimal amount, LocalDateTime lastPaymentDate,
-			LocalDateTime lastCustomaizedDate, Long lastpaidAmount) {
+			LocalDateTime lastCustomaizedDate, BigDecimal lastpaidAmount, BigDecimal lastCustomizedAmount) {
 		super();
 		this.id = id;
 		this.customerId = customerId;
@@ -96,6 +102,18 @@ public class Wallet {
 		this.lastPaymentDate = lastPaymentDate;
 		this.lastCustomaizedDate = lastCustomaizedDate;
 		this.lastpaidAmount = lastpaidAmount;
+		LastCustomizedAmount = lastCustomizedAmount;
 	}
+
+	public BigDecimal getLastCustomizedAmount() {
+		return LastCustomizedAmount;
+	}
+
+	public void setLastCustomizedAmount(BigDecimal lastCustomizedAmount) {
+		LastCustomizedAmount = lastCustomizedAmount;
+	}
+
+
+
 }
 

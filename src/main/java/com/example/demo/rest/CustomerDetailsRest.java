@@ -2,8 +2,6 @@ package com.example.demo.rest;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,7 +9,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.demo.dto.CustomerDatailsDTO;
 import com.example.demo.dto.CustomerResponseDto;
 import com.example.demo.dto.CustomerSaverRequestDto;
-import com.example.demo.dto.CustomerStatusDto;
 import com.example.demo.dto.CustomerwebsiteresDto;
 import com.example.demo.dto.RenewalDateResponse;
 import com.example.demo.dto.addressChangeDto;
@@ -33,6 +29,7 @@ import com.example.demo.entity.CustomerDetails;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.example.demo.service.CustomerDeatilService;
 import com.example.demo.service.PincodeDetailsService;
+import com.example.demo.service.SubscriptionService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -47,6 +44,18 @@ public class CustomerDetailsRest {
 	private CustomerDetailsRepo customerDetailsRepo;
 	@Autowired
 	private PincodeDetailsService pincodeDetailsService;
+
+	@Autowired
+	private SubscriptionService subscriptionService;
+
+	@PostMapping("/subscription/update-pack-details")
+	public ResponseEntity<String> updatePack(
+			@RequestParam Long customerId,
+			@RequestParam Long newPackId) {
+
+		String response = subscriptionService.updatePackDetails(customerId, newPackId);
+		return ResponseEntity.ok(response);
+	}
 
 	@PostMapping("/save")
 	public ResponseEntity<?> createCustomer(@RequestBody List<CustomerDatailsDTO> customer) {

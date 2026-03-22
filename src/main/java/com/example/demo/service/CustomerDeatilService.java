@@ -443,40 +443,43 @@ public class CustomerDeatilService {
 
 	    LocalDateTime paymentTime = customerDetailsRepo.checkCustomaizationEnable(customerId);
 
-	    // ✅ Rule 0: If no payment, no customization
+
+	    // Rule 0: If no payment, no customization
 	    if (paymentTime == null) {
 	        return false;
 	    }
+System.out.println(paymentTime);
 
 	    LocalDateTime now = LocalDateTime.now();
 
-	    // ✅ Rule 1: 24 Hours must be completed
+	    //  Rule 1: 24 Hours must be completed
 	    if (Duration.between(paymentTime, now).toHours() < 24) {
 	        return false;
 	    }
 
-	    // ✅ Rule 2: Only allow between 9:30 AM – 7:30 PM
+	    //  Rule 2: Only allow between 9:30 AM  7:30 PM
 	    LocalTime startTime = LocalTime.of(9, 30);
-	    LocalTime endTime   = LocalTime.of(19, 30);
+	    LocalTime endTime   = LocalTime.of(23, 30);
 
 	    LocalTime currentTime = now.toLocalTime();
+System.out.println(currentTime );
 
 	    if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
 	        return false;
 	    }
 
-	    // ✅ Rule 3: Block Saturday completely
+	    //  Rule 3: Block Saturday completely
 	    DayOfWeek today = now.getDayOfWeek();
-	    if (today == DayOfWeek.SATURDAY) {
-	        return false;
-	    }
+	//    if (today == DayOfWeek.SATURDAY) {
+	 //       return false;
+	  //  }
 
-	    // ✅ Rule 4: Block Sunday completely (No delivery)
+	    //  Rule 4: Block Sunday completely (No delivery)
 //	    if (today == DayOfWeek.SUNDAY) {
 //	        return false;
 //	    }
 
-	    // ✅ If all conditions pass → Customization ENABLED
+	    //  If all conditions pass  Customization ENABLED
 	    return true;
 	}
 

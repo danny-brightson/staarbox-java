@@ -1,10 +1,12 @@
 package com.example.demo.rest;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +16,7 @@ import com.example.demo.service.WalletService;
 
 @RestController
 @RequestMapping("/api")
-public class WalletRest {
+public class WalletRest  {
 	
 	
 	
@@ -41,5 +43,13 @@ public class WalletRest {
 	    return ResponseEntity.ok(balance);
 	}
 
-	
-}
+	@PostMapping("/wallet/customize")
+	public ResponseEntity<String> customizeWallet(
+        @RequestParam Long customerId,
+        @RequestParam BigDecimal amount) {
+
+		walletService.customizeWallet(customerId, amount, LocalDateTime.now());
+
+		return ResponseEntity.ok("Wallet updated successfully");
+	}
+} 

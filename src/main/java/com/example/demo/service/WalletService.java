@@ -11,6 +11,7 @@ import com.example.demo.dto.RecentActivityResponse;
 import com.example.demo.entity.Wallet;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.example.demo.repo.WalletRepository;
+
 @Service
 public class WalletService {
 
@@ -20,7 +21,6 @@ public class WalletService {
 	@Autowired
     private CustomerDetailsRepo customerDetailsRepo;
 
-	
 	public RecentActivityResponse getRecentActivity(Long customerId) {
 
 	    Wallet wallet = walletRepository.findByCustomerId(customerId).orElse(null);
@@ -36,10 +36,6 @@ public class WalletService {
 	            renewedDate
 	    );
 	}
-
-
-	
-	
 
 	    public BigDecimal getWalletBalance(Long customerId) {
 
@@ -59,6 +55,39 @@ public class WalletService {
 	      
 	        return rate != null ? rate : BigDecimal.ZERO;
 	    }
-	
 
+	public void customizeWallet(Long customerId, BigDecimal amount, LocalDateTime date) {
+
+		Optional<Wallet> walletOpt = walletRepository.findByCustomerId(customerId);
+
+		
+		BigDecimal rate = customerDetailsRepo.findRateByCustomerId(customerId);
+
+		BigDecimal lastPaidAmount = rate != null ? rate : null;
+
+		if(walletOpt.isPresent()) {
+
+			Wallet wallet = walletOpt.get();
+
+			wallet.setLastCustomaizedDate(date);
+			wallet.setLastCustomizedAmount(amount);
+			//wallet.setLastpaidAmount(lastPaidAmount);
+
+			walletRepository.save(wallet);
+
+		} 
+		else {
+
+			Wallet wallet = new Wallet();
+
+			wallet.setCustomerId(customerId);
+			wallet.setAmount(lastPaidAmount);
+			wallet.setLastCustomaizedDate(date);
+			wallet.setLastCustomizedAmount(amount);
+			wallet.setLastpaidAmount(lastPaidAmount);
+
+			walletRepository.save(wallet);
+		}
+	}
+	
 }

@@ -1,15 +1,16 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ import com.example.demo.dto.OptionalIngredientDto;
 import com.example.demo.dto.PackageResponseDto;
 import com.example.demo.entity.CustomerDetails;
 import com.example.demo.entity.CustomizedPackageDetails;
-import com.example.demo.entity.LkpFruitAndNuts;
 import com.example.demo.repo.CommonandPragnentpackDetailsRepo;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.example.demo.repo.CustomizedpackagedetailsRepo;
@@ -29,8 +29,8 @@ import com.example.demo.repo.PackageTypeRepo;
 
 @Service
 public class CustomaizationService {
-	@Autowired
-	private CustomerDetailsRepo customerRepo;
+	// @Autowired
+	// private CustomerDetailsRepo customerRepo;
 
 	@Autowired
 	private com.example.demo.repo.AllergicPackageDetailsRepo AllergicPackageDetailsRepo;
@@ -159,11 +159,15 @@ public class CustomaizationService {
 //	}
 
 	public List<PackageResponseDto> getPackageByCustomerId(long customerId) {
-		CustomerDetails customer = customerRepo.findById(customerId)
+		CustomerDetails customer = customerDetailsRepo.findById(customerId)
 				.orElseThrow(() -> new RuntimeException("Customer not found"));
 
 		LocalDate businessDate = LocalDate.now().plusDays(1);
-		DayOfWeek day = LocalDate.now().getDayOfWeek();
+
+		 //LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
+		 DayOfWeek day = LocalDate.now().getDayOfWeek();
+
+		//DayOfWeek day = businessDate.getDayOfWeek();
 		int weekday = 0;
 		if (day.getValue() == 7) {
 			weekday = 1;
@@ -171,8 +175,26 @@ public class CustomaizationService {
 			weekday = day.getValue() + 1;
 		}
 
+		// Boolean isCustomizedToday = doesCustomizedPackageExist(customerId, Long.valueOf(weekday), businessDate);
 		Boolean isCustomizedToday = doesCustomizedPackageExist(customerId, Long.valueOf(weekday), businessDate);
-		Boolean isCommon = isCommon(customer.isPragnent(), customer.isAlergic(), isCustomizedToday);
+
+		System.out.println("==== DEBUG START ====");
+		System.out.println("CustomerId: " + customerId);
+		System.out.println("BusinessDate: " + businessDate);
+		System.out.println("Weekday: " + weekday);
+		System.out.println("isCustomizedToday: " + isCustomizedToday);
+		System.out.println("isCustomized flag (DB): " + customer.isCustomized());
+		System.out.println("==== DEBUG END ====");
+
+
+		// Boolean isCommon = isCommon(customer.isPragnent(), customer.isAlergic(), isCustomizedToday);
+		Boolean isCommon = isCommon(
+							customer.isPragnent(),
+							customer.isAlergic(),
+							// customer.isCustomized(),
+							isCustomizedToday
+						);
+
 
 		Integer packageTypeId = null;
 		System.out.println(day.getValue());
@@ -489,20 +511,35 @@ public class CustomaizationService {
 
 		System.out.println("request" + request.getOptional());
 		// Allowed Time Range
-		LocalTime startTime = LocalTime.of(9, 0);
-		LocalTime endTime = LocalTime.of(19, 0); // 7 PM
+		// LocalTime startTime = LocalTime.of(9, 0);
+		// LocalTime endTime = LocalTime.of(19, 0); // 7 PM
 
-		LocalTime current = LocalTime.now();
+		// LocalTime current = LocalTime.now();
+
+		// if (current.isBefore(startTime) || current.isAfter(endTime)) {
+		// 	throw new RuntimeException(
+		// 			"Today's customization time is over. You can customize only between 9 AM to 7 PM.");
+		// } 
+		LocalTime startTime = LocalTime.of(9, 30);   // 9:30 AM
+		LocalTime endTime = LocalTime.of(23, 30);   // 7:30 PM
+
+		LocalTime current = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+		
+		System.out.println("Current Time: " + current);
 
 		if (current.isBefore(startTime) || current.isAfter(endTime)) {
 			throw new RuntimeException(
-					"Today's customization time is over. You can customize only between 9 AM to 7 PM.");
-		} else {
+				"Customization allowed only between 9:30 AM to 7:30 PM");
+		}
+		
+		else {
 			CustomizedPackageDetails entity = new CustomizedPackageDetails();
 
 			LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
 			System.out.println(businessDate);
-			DayOfWeek day = LocalDateTime.now().getDayOfWeek();
+			// DayOfWeek day = LocalDateTime.now().getDayOfWeek();
+
+			DayOfWeek day = businessDate.getDayOfWeek();
 			int weekday = 0;
 			if (day.getValue() == 7) {
 				weekday = 1;
@@ -510,8 +547,15 @@ public class CustomaizationService {
 				weekday = day.getValue() + 1;
 			}
 
+			// Optional<CustomizedPackageDetails> data = customizedpackagedetailsRepo
+			// 		.findByCustomerIdAndCustomizedDate(request.getCustomerId(), businessDate);
+
+				
 			Optional<CustomizedPackageDetails> data = customizedpackagedetailsRepo
-					.findByCustomerIdAndCustomizedDate(request.getCustomerId(), businessDate);
+			 		.findByCustomerIdAndCustomizedDate(request.getCustomerId(), businessDate);
+
+
+
 			data.ifPresentOrElse(existing -> {
 				System.out.println(existing);
 				customizedpackagedetailsRepo.deleteById(existing.getId());
@@ -519,14 +563,19 @@ public class CustomaizationService {
 
 			System.out.println(request.getCustomerId());
 			entity.setCustomerId(request.getCustomerId());
-			entity.setCustomizedDate(businessDate);
+			//entity.setCustomizedDate(businessDate);
 			entity.setWeekdaysId(weekday);
-			entity.setIsEggAdded(request.isEggAdded());
-
+			entity.setCustomizedDate(businessDate);
+			// st.isEggAdded());
+			// entity.setIsEggAdded(request.getIsEggAdded());
+			entity.setIsEggAdded(request.isEggAdded()); 
+			// entity.setIsEggAdded(request.getEggAdded());
+      
 			// Egg or seed
 			if (request.getEggOrSeed() != null && request.getEggOrSeed().getId() != null) {
 			    entity.setEggOrSeed(request.getEggOrSeed().getId().intValue());
-			    entity.setEggOrSeedWeight(request.getEggOrSeed().getWeight());
+			    // entity.setEggOrSeedWeight(request.getEggOrSeed().getWeight());
+				entity.setEggOrSeedWeight(String.valueOf(request.getEggOrSeed().getWeight()));
 			}
 
 
@@ -617,9 +666,6 @@ public class CustomaizationService {
 			    }
 			}
 
-			// ==========================
-			// OPTIONAL ITEMS (0–6) 
-			// ==========================
 			List<OptionalIngredientDto> optionalItems = request.getOptional();
 
 			if (optionalItems != null) {
@@ -685,19 +731,17 @@ public class CustomaizationService {
 				customerDetails.setLastCustomizedDate(businessDate);
 				customerDetails.setModefiedBy("user");
 				customerDetails.setModefiedTime(LocalDate.now());
-				customerDetailsRepo.updateCustomization(request.getCustomerId(), customerDetails.isCustomized(),
-						businessDate, "user", LocalDate.now());
-
-			}
+				customerDetailsRepo.updateCustomization(
+   					 request.getCustomerId(),
+   				         customerDetails.isCustomized(),
+    					 businessDate,
+ 				         "user",
+ 				          LocalDate.now()
+					);
 
 			return true;
 		}
-	}
-
-//	public int getFruitOrNutId(String fruitAndNuts) {
-//		System.out.println(fruitAndNuts);
-//		return lkpFruitAndNutsRepo.findByFruitAndNutsIgnoreCase(fruitAndNuts).map(LkpFruitAndNuts::getId)
-//				.orElseThrow(() -> new RuntimeException("Fruit/Nut not found: " + fruitAndNuts));
-//	}
-
-}
+	 return false;
+        }
+    }
+}    

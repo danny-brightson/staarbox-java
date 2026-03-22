@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +38,7 @@ public class PackageController {
 
 	@Autowired
 	private QRCodeGenerator qRCodeGenerator;
-	
+
 
 	
 	@PostMapping("/batch-generate")
@@ -87,6 +88,13 @@ public class PackageController {
 	     );
 	     return ResponseEntity.ok("Packed items updated.");
 	 }
+	 @PostMapping("/generatePackaging/{customerId}")
+	 	public String generatePackaging(@PathVariable Long customerId) {
+		return packagingService.generatePackaging(customerId);
+		}
+
+
+
 	 @GetMapping("/getNumberOfBox")
 	    public List<PlanCountDto> getNumberOfBox(@RequestParam int districtId) {
 		 return packagingService.getNumberOfBox(districtId);

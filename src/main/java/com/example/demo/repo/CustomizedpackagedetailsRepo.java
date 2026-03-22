@@ -407,4 +407,13 @@ public interface CustomizedpackagedetailsRepo extends JpaRepository<CustomizedPa
 	@Query(value = "select * from customizedpackagedetails where CustomerId=:customerId  AND DATE(CustomizedDate) = DATE(:businessDate) ", nativeQuery = true)
 	Optional<CustomizedPackageDetails> findByCustomerIdAndCustomizedDate(Long customerId, LocalDateTime businessDate);
 
+
+
+
+    @Query("SELECT c FROM CustomizedPackageDetails c WHERE c.customerId = :customerId AND c.createdTime BETWEEN :start AND :end")
+    List<CustomizedPackageDetails> findByCustomerIdAndDateRange(
+            @Param("customerId") Long customerId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
 }

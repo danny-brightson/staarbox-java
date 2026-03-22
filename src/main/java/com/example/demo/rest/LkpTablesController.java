@@ -1,5 +1,6 @@
 package com.example.demo.rest;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -82,6 +84,7 @@ public class LkpTablesController {
 	public ResponseEntity<?> getPackDetails(@RequestParam int customerId) {
 	    
 	    int districtId = customerDetailsRepo.getDistrictId(customerId);
+
 	    boolean isPragnent = customerDetailsRepo.getIsPragnentFlag(customerId);
 
 	    if (districtId == 0) {
@@ -213,4 +216,12 @@ public class LkpTablesController {
 	public List<ReasonForNotDelivered> lkpReasonForNotDelivered() {
 		return reasonForNotDeliveredRepo.findAll();
 	}
+
+	@GetMapping("/pack-details/{customerId}")
+	public ResponseEntity<?> getPackDetails(@PathVariable Long customerId){
+
+		BigDecimal rate = customerDetailsRepo.findRateByCustomerId(customerId);
+
+		return ResponseEntity.ok(rate);
+}
 }
