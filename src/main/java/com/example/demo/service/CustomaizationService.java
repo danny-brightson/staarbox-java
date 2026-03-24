@@ -537,9 +537,9 @@ public class CustomaizationService {
 
 			LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
 			System.out.println(businessDate);
-			// DayOfWeek day = LocalDateTime.now().getDayOfWeek();
+			 DayOfWeek day = LocalDateTime.now().getDayOfWeek();
 
-			DayOfWeek day = businessDate.getDayOfWeek();
+			//DayOfWeek day = businessDate.getDayOfWeek();
 			int weekday = 0;
 			if (day.getValue() == 7) {
 				weekday = 1;
