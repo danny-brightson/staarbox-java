@@ -22,6 +22,9 @@ public class Packaging {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "Id")
 	private Long id;
+
+	@Column(name = "Weekday")
+	private Integer weekday;
 	
 	@Column(name = "CustomerId")
 	private Long customerId;
@@ -71,6 +74,14 @@ public class Packaging {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Integer getWeekday() {
+		return weekday;
+	}
+
+	public void setWeekday(Integer weekday) {
+		this.weekday = weekday;
 	}
 
 	public Long getCustomerId() {

@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.dto.PackageResponseDto;
 import com.example.demo.entity.CustomizedPackageDetails;
 
 @Repository
@@ -22,6 +21,14 @@ public interface CustomizedpackagedetailsRepo extends JpaRepository<CustomizedPa
 			WHERE CustomerId = :customerId AND WeekdaysId = :weekdayId AND DATE(CustomizedDate) = :date
 			""", nativeQuery = true)
 	Long countCustomizedEntries(Long customerId, Long weekdayId, LocalDate date);
+
+
+
+    @Query("SELECT c FROM CustomizedPackageDetails c WHERE c.customerId = :customerId AND c.createdTime BETWEEN :start AND :end")
+    List<CustomizedPackageDetails> findByCustomerIdAndDateRange(
+            @Param("customerId") Long customerId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
 
 //	
 //		    @Query(value = """
@@ -405,15 +412,7 @@ public interface CustomizedpackagedetailsRepo extends JpaRepository<CustomizedPa
 			@Param("customizedDate") LocalDate customizedDate);
 
 	@Query(value = "select * from customizedpackagedetails where CustomerId=:customerId  AND DATE(CustomizedDate) = DATE(:businessDate) ", nativeQuery = true)
-	Optional<CustomizedPackageDetails> findByCustomerIdAndCustomizedDate(Long customerId, LocalDateTime businessDate);
-
-
-
-
-    @Query("SELECT c FROM CustomizedPackageDetails c WHERE c.customerId = :customerId AND c.createdTime BETWEEN :start AND :end")
-    List<CustomizedPackageDetails> findByCustomerIdAndDateRange(
-            @Param("customerId") Long customerId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+	Optional<CustomizedPackageDetails> findByCustomerIdAndCustomizedDate(Long customerId, LocalDate businessDate);
+    
 
 }

@@ -7,17 +7,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.repo.CustomerDetailsRepo;
-import com.example.demo.repo.StagingRenewalRepo;
 
 @Component
 public class CancelSubscriptionJob {
 
     @Autowired
     private CustomerDetailsRepo customerDetailsRepo;
-
-    @Autowired
-    private StagingRenewalRepo stagingRepo;
-
 
     @Scheduled(cron = "0 59 23 * * ?")
 
@@ -27,10 +22,5 @@ public class CancelSubscriptionJob {
         customerDetailsRepo.cancelExpiredSubscriptions();
 
         System.out.println("Expired subscriptions cancelled successfully");
-    }
-
-        @Scheduled(cron = "0 59 23 * * ?")
-    public void processRenewals() {
-        // code above
     }
 }
