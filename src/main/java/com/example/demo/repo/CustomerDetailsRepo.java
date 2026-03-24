@@ -23,6 +23,12 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	@Query(value = "select DistrictId from customerdetails where id = :customerId and StatusId=1", nativeQuery = true)
 	int getDistrictId(int customerId);
 
+	@Transactional
+	@Modifying
+	@Query("UPDATE CustomerDetails c SET c.packDetailsId = :packId WHERE c.id = :customerId")
+	void updatePackDirect(@Param("customerId") Long customerId,
+						@Param("packId") Long packId);
+
 	
 	@Transactional
 	@Modifying
@@ -58,7 +64,9 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	        LocalDate applyDate
 	);
 
-	
+	@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
+	LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
+
 	@Transactional
 	@Modifying
 	@Query(value = """
@@ -300,17 +308,6 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 
 			@Query(value="SELECT districtId FROM customerdetails WHERE id=:customerId", nativeQuery=true)
 			Integer findDistrictIdByCustomerId(@Param("customerId") Long customerId);
-
-@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
-	LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
-
-	@Transactional
-	@Modifying
-	@Query("UPDATE CustomerDetails c SET c.packDetailsId = :packId WHERE c.id = :customerId")
-	void updatePackDirect(@Param("customerId") Long customerId,
-						@Param("packId") Long packId);
-
-
 }
 		
 		

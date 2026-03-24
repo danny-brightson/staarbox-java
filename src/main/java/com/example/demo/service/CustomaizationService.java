@@ -50,6 +50,8 @@ public class CustomaizationService {
 	@Autowired
 	private CustomerDetailsRepo customerDetailsRepo;
 
+	private Object daysToAdd;
+
 	public boolean isCommon(boolean isPregnant, boolean isAllergic, boolean isCustomized) {
 		return !isPregnant && !isAllergic && !isCustomized;
 	}
@@ -164,10 +166,10 @@ public class CustomaizationService {
 
 		LocalDate businessDate = LocalDate.now().plusDays(1);
 
-		 //LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
-		 DayOfWeek day = LocalDate.now().getDayOfWeek();
+		// LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
+		// DayOfWeek day = LocalDate.now().getDayOfWeek();
 
-		//DayOfWeek day = businessDate.getDayOfWeek();
+		DayOfWeek day = businessDate.getDayOfWeek();
 		int weekday = 0;
 		if (day.getValue() == 7) {
 			weekday = 1;
@@ -348,7 +350,11 @@ public class CustomaizationService {
 					);
 
 				opt.setName(nameObj.toString());
-				opt.setCategory(getValue(row, indexMap, "optional" + i + "Category").toString());
+				
+				// opt.setCategory(getValue(row, indexMap, "optional" + i + "Category").toString());
+
+				Object cat = getValue(row, indexMap, "optional" + i + "Category");
+				opt.setCategory(cat != null ? cat.toString() : null);
 				Object w = getValue(row, indexMap, "optional" + i + "Weight");
 				opt.setWeight(w != null ? w.toString() : null);
 
@@ -514,52 +520,72 @@ public class CustomaizationService {
 		// LocalTime startTime = LocalTime.of(9, 0);
 		// LocalTime endTime = LocalTime.of(19, 0); // 7 PM
 
-		// LocalTime current = LocalTime.now();
+		LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+		LocalTime current = LocalTime.now();
 
-		// if (current.isBefore(startTime) || current.isAfter(endTime)) {
-		// 	throw new RuntimeException(
-		// 			"Today's customization time is over. You can customize only between 9 AM to 7 PM.");
-		// } 
 		LocalTime startTime = LocalTime.of(9, 30);   // 9:30 AM
-		LocalTime endTime = LocalTime.of(23, 30);   // 7:30 PM
-
-		LocalTime current = LocalTime.now(ZoneId.of("Asia/Kolkata"));
-		
-		System.out.println("Current Time: " + current);
-
+		LocalTime endTime = LocalTime.of(19, 30);   // 7:30 PM
 		if (current.isBefore(startTime) || current.isAfter(endTime)) {
-			throw new RuntimeException(
-				"Customization allowed only between 9:30 AM to 7:30 PM");
-		}
+    throw new RuntimeException("Customization allowed only between 9:30 AM to 7:30 PM");
+	}
 		
 		else {
 			CustomizedPackageDetails entity = new CustomizedPackageDetails();
 
-			LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
+			// LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
+
+			// LocalDateTime businessDate = LocalDate.now().plusDays(1).atStartOfDay();
+			LocalDateTime businessDate = now
+										.toLocalDate()
+										.plusDays(1)
+										.atStartOfDay();
 			System.out.println(businessDate);
+			
 			// DayOfWeek day = LocalDateTime.now().getDayOfWeek();
 
 			DayOfWeek day = businessDate.getDayOfWeek();
 			int weekday = 0;
 			if (day.getValue() == 7) {
 				weekday = 1;
-			} else {
+			} else {			
 				weekday = day.getValue() + 1;
 			}
 
 			// Optional<CustomizedPackageDetails> data = customizedpackagedetailsRepo
 			// 		.findByCustomerIdAndCustomizedDate(request.getCustomerId(), businessDate);
 
-				
-			Optional<CustomizedPackageDetails> data = customizedpackagedetailsRepo
-			 		.findByCustomerIdAndCustomizedDate(request.getCustomerId(), businessDate);
+			// LocalDate date = businessDate.toLocalDate();
+			// Optional<CustomizedPackageDetails> data = customizedpackagedetailsRepo
+			//  		.findByCustomerIdAndCustomizedDate(request.getCustomerId(), date);
+
+			LocalDateTime start = businessDate.toLocalDate().atStartOfDay();
+			LocalDateTime end = start.plusDays(1);
+
+			// Optional<CustomizedPackageDetails> data =
+			// 	customizedpackagedetailsRepo
+			// 		.findByCustomerIdAndDateRange(request.getCustomerId(), start, end);
+					
+
+			// data.ifPresentOrElse(existing -> {
+			// 	System.out.println(existing);
+			// 	customizedpackagedetailsRepo.deleteById(existing.getId());
+			// }, () -> System.out.println("No existing customization found for this customer & date."));
 
 
+		List<CustomizedPackageDetails> data =
+        customizedpackagedetailsRepo.findByCustomerIdAndDateRange(
+                request.getCustomerId(), start, end);
 
-			data.ifPresentOrElse(existing -> {
-				System.out.println(existing);
-				customizedpackagedetailsRepo.deleteById(existing.getId());
-			}, () -> System.out.println("No existing customization found for this customer & date."));
+			if (!data.isEmpty()) {
+
+				for (CustomizedPackageDetails existing : data) {
+					System.out.println(existing);
+					customizedpackagedetailsRepo.deleteById(existing.getId());
+				}
+
+			} else {
+				System.out.println("No existing customization found for this customer & date.");
+			}
 
 			System.out.println(request.getCustomerId());
 			entity.setCustomerId(request.getCustomerId());
@@ -666,6 +692,9 @@ public class CustomaizationService {
 			    }
 			}
 
+			// ==========================
+			// OPTIONAL ITEMS (0–6) 
+			// ==========================
 			List<OptionalIngredientDto> optionalItems = request.getOptional();
 
 			if (optionalItems != null) {
@@ -744,4 +773,10 @@ public class CustomaizationService {
 	 return false;
         }
     }
-}    
+
+//	public int getFruitOrNutId(String fruitAndNuts) {
+//		System.out.println(fruitAndNuts);
+//		return lkpFruitAndNutsRepo.findByFruitAndNutsIgnoreCase(fruitAndNuts).map(LkpFruitAndNuts::getId)
+//				.orElseThrow(() -> new RuntimeException("Fruit/Nut not found: " + fruitAndNuts));
+//	}
+}
