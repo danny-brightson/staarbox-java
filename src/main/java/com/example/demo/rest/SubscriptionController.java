@@ -20,5 +20,6 @@ public class SubscriptionController {
             @RequestParam Long packId) {
 
         return subscriptionService.updatePackDetails(customerId, packId);
+
     }
 }

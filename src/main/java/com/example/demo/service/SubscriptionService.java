@@ -1,15 +1,15 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.CustomerDetails;
-import com.example.demo.entity.StagingRenewal;
-import com.example.demo.repo.CustomerDetailsRepo;
-import com.example.demo.repo.StagingRenewalRepo;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.example.demo.entity.CustomerDetails;
+import com.example.demo.entity.StagingRenewal;
+import com.example.demo.repo.CustomerDetailsRepo;
+import com.example.demo.repo.StagingRenewalRepo;
 
 
 @Service
@@ -26,10 +26,12 @@ public class SubscriptionService {
         CustomerDetails customer = customerRepo.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-    
-        Long currentPack = customer.getPackDetailsId() != 0
-                ? Long.valueOf(customer.getPackDetailsId())
-                : null;
+        
+        // Long currentPack = customer.getPackDetailsId() != 0
+        
+        //         ? Long.valueOf(customer.getPackDetailsId())
+        //         : null;
+        Long currentPack = Long.valueOf(customer.getPackDetailsId());
 
         LocalDateTime renewalDate = customer.getNextrenewalDate() != null
                 ? customer.getNextrenewalDate().toInstant()
@@ -43,41 +45,52 @@ public class SubscriptionService {
             throw new RuntimeException("Renewal date missing");
         }
 
-        if (currentPack != null && currentPack.equals(newPackId)) {
-            return "No change in pack";
-        }
+        // if (currentPack != null && currentPack.equals(newPackId)) {
+        //     return "No change in pack";
+        // }
 
         
-        if (!renewalDate.isAfter(today)) {
-            customerRepo.updatePackDirect(customerId, newPackId);
-            return "Pack updated directly";
-        }
+        // if (!renewalDate.isAfter(today)) {
+        //     customerRepo.updatePackDirect(customerId, newPackId);
+        //     return "Pack updated directly";
+        // }
 
        
         Optional<StagingRenewal> existing = stagingRepo.findByCustomerId(customerId);
 
+        StagingRenewal s;
         if (existing.isPresent()) {
+             s = existing.get();
+        }
 
-            StagingRenewal s = existing.get();
-            s.setNewPackId(newPackId);
-            s.setPaymentDate(LocalDateTime.now());
-            stagingRepo.save(s);
+        //     StagingRenewal s = existing.get();
+        //     s.setNewPackId(newPackId);
+        //     s.setPaymentDate(LocalDateTime.now());
+        //     stagingRepo.save(s);
 
-            return "Staging updated";
+        //     return "Staging updated";
 
-        } else {
+        // } 
+        else {
 
-            StagingRenewal s = new StagingRenewal();
+            s = new StagingRenewal();
             s.setCustomerId(customerId);
             s.setOldPackId(currentPack);
-            s.setNewPackId(newPackId);
-            s.setPaymentDate(LocalDateTime.now());
+            // s.setNewPackId(newPackId);
+            // s.setPaymentDate(LocalDateTime.now());
             s.setNextRenewalDate(renewalDate);
             s.setProcessed(false);
 
-            stagingRepo.save(s);
-
-            return "Staging created";
         }
+            s.setNewPackId(newPackId);
+            s.setPaymentDate(LocalDateTime.now());
+
+            System.out.println("Saving staging:");
+            System.out.println("CustomerId: " + s.getCustomerId());
+            System.out.println("OldPackId: " + s.getOldPackId());
+            System.out.println("NewPackId: " + s.getNewPackId());
+
+            stagingRepo.save(s);
+            return "Saved in staging";
     }
 }
