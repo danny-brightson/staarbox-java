@@ -84,12 +84,21 @@ public class SubscriptionService {
         }
             s.setNewPackId(newPackId);
             s.setPaymentDate(LocalDateTime.now());
+            
+            // current renewal date (from customer)
+            s.setCurrentRenewalDate(renewalDate);
+
+            // upcoming renewal date (example logic)
+            s.setUpcomingRenewalDate(renewalDate.plusDays(30));
+
+            // renewal done time
+            s.setRenewalDate(LocalDateTime.now());
 
             System.out.println("Saving staging:");
             System.out.println("CustomerId: " + s.getCustomerId());
             System.out.println("OldPackId: " + s.getOldPackId());
             System.out.println("NewPackId: " + s.getNewPackId());
-
+            
             stagingRepo.save(s);
             return "Saved in staging";
     }
