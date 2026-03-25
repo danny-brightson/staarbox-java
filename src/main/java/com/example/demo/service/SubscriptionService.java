@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.CustomerDetails;
+import com.example.demo.dto.RenewalResponse;
 import com.example.demo.entity.StagingRenewal;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.example.demo.repo.StagingRenewalRepo;
@@ -20,6 +22,8 @@ public class SubscriptionService {
 
     @Autowired
     private StagingRenewalRepo stagingRepo;
+
+    private static final int DELIVERY_DAYS = 26;
 
     public String updatePackDetails(Long customerId, Long newPackId) {
 
@@ -84,12 +88,17 @@ public class SubscriptionService {
         }
             s.setNewPackId(newPackId);
             s.setPaymentDate(LocalDateTime.now());
-            
+
             // current renewal date (from customer)
             s.setCurrentRenewalDate(renewalDate);
 
             // upcoming renewal date (example logic)
-            s.setUpcomingRenewalDate(renewalDate.plusDays(30));
+            // s.setUpcomingRenewalDate(renewalDate.plusDays(30));
+
+            // ✅ 26 delivery days excluding Sunday
+        LocalDateTime upcomingDate = addDeliveryDays(renewalDate, DELIVERY_DAYS);
+        s.setUpcomingRenewalDate(upcomingDate);
+
 
             // renewal done time
             s.setRenewalDate(LocalDateTime.now());
@@ -101,5 +110,50 @@ public class SubscriptionService {
             
             stagingRepo.save(s);
             return "Saved in staging";
+    }
+
+        // 🔥 CORE SUBSCRIPTION LOGIC
+    private LocalDateTime addDeliveryDays(LocalDateTime startDate, int days) {
+
+        LocalDateTime result = startDate;
+        int count = 0;
+
+        while (count < days) {
+            result = result.plusDays(1);
+
+            if (result.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                count++;
+            }
+        }
+
+        return result;
+    }
+
+
+    public RenewalResponse getRenewalDetails(Long customerId) {
+
+        CustomerDetails customer = customerRepo.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        Optional<StagingRenewal> stagingOpt = stagingRepo.findByCustomerId(customerId);
+
+        RenewalResponse response = new RenewalResponse();
+
+        response.setCustomerId(customerId);
+        response.setCurrentPackId(Long.valueOf(customer.getPackDetailsId()));
+        response.setCurrentNextRenewalDate(customer.getNextrenewalDate());
+
+        if (stagingOpt.isPresent()) {
+            StagingRenewal s = stagingOpt.get();
+
+            response.setRenewalAvailable(true);
+            response.setNewPackId(s.getNewPackId());
+            response.setPaymentDate(s.getPaymentDate());
+            response.setUpcomingRenewalDate(s.getNextRenewalDate());
+            response.setUpcomingRenewalDate(s.getUpcomingRenewalDate());
+        } else {
+            response.setRenewalAvailable(false);
+        }
+        return response;
     }
 }
