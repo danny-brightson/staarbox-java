@@ -68,9 +68,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	               OrderId           = :orderId,
 	               CustomerStatusId  = :customerStatus,
 	               paymentDoneTime   = :paymentDoneTime,
-	               IsCustomized      = :isCustomized,
-	               IsRenewed         = :isRenewed,
-	               RenewedDate       = :renewedDate
+	               IsCustomized      = :isCustomized
 	         WHERE Id = :customerId
 	           AND StatusId = 1
 	        """,
@@ -81,9 +79,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	                        @Param("orderId")          String orderId,
 	                        @Param("customerStatus")   int customerStatus,
 	                        @Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
-	                        @Param("isCustomized")  int isCustomized,
-	                        @Param("isRenewed") boolean isRenewed,
-	                        @Param("renewedDate")  LocalDateTime renewedDate);
+	                        @Param("isCustomized")  int isCustomized);
 
 //	    @Query("SELECT new com.example.demo.dto.PackagingDto(c.id, c.zoneId, c.distanceId, c.districtId, c.deliveryCode, c.packDetailsId) " +
 //	    	       "FROM CustomerDetails c " +
