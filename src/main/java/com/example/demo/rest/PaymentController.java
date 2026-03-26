@@ -117,11 +117,7 @@ public class PaymentController {
 
 	    List<Map<String, Object>> results = new ArrayList<>();
 	    
-	
-	 int customerStatus = 0;
-	 
-	    
-	    
+
 
 	    for (Integer cusId : customerIds) {
 	        Map<String, Object> result = new HashMap<>();
@@ -192,7 +188,7 @@ public class PaymentController {
 	            // ✅ Convert to LocalDateTime (start of day)
 	            LocalDateTime nextRenewDate = nextRenewalLocalDate.atStartOfDay();
 
-	            
+	             int customerStatus = 5;
 	            int customized=0;
 	            customerDetailsRepo.updatePaymentStatus(
 	                    true, nextRenewDate, cusId, orderId, customerStatus, 
