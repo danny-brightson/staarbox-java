@@ -17,6 +17,9 @@ public class StagingPackaging {
     private Integer statusId;
     private String createdBy;
     private LocalDateTime createdTime;
+    
+    @Column(name = "weekday")
+    private Integer weekday;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -38,4 +41,7 @@ public class StagingPackaging {
 
     public LocalDateTime getCreatedTime() { return createdTime; }
     public void setCreatedTime(LocalDateTime createdTime) { this.createdTime = createdTime; }
+
+    public Integer getWeekday() { return weekday; }
+    public void setWeekday(Integer weekday) { this.weekday = weekday; }
 }

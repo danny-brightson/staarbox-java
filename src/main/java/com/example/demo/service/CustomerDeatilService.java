@@ -395,7 +395,7 @@ public class CustomerDeatilService {
 
 		    return "Address update requested — will take effect after 2 days.";
 		}
-
+		
 	public boolean UpdateLocationAddress(addressChangeDto request) { 
 		//LocalDate applyDate = LocalDate.now().plusDays(2);
 		
