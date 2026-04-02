@@ -21,15 +21,15 @@ public class CancelSubscriptionJob {
     private StagingRenewalRepo stagingRepo;
 
 
-    @Scheduled(cron = "0 59 23 * * ?")
+   // @Scheduled(cron = "0 59 23 * * ?")
 
-    public void cancelSubscriptions() {
+   // public void cancelSubscriptions() {
 
-        System.out.println("Cron running at: " + LocalDateTime.now());
-        customerDetailsRepo.cancelExpiredSubscriptions();
+    //    System.out.println("Cron running at: " + LocalDateTime.now());
+    //    customerDetailsRepo.cancelExpiredSubscriptions();
 
-        System.out.println("Expired subscriptions cancelled successfully");
-    }
+    //    System.out.println("Expired subscriptions cancelled successfully");
+   // }
 
     @Scheduled(cron = "0 59 23 * * ?")
     public void processRenewals() {
@@ -40,7 +40,7 @@ public class CancelSubscriptionJob {
 
         for (StagingRenewal s : stagingList) {
 
-            // ✅ NULL CHECK
+            // ? NULL CHECK
             if (s.getNextRenewalDate() == null) {
                 continue;
             }
@@ -49,7 +49,8 @@ public class CancelSubscriptionJob {
 
                 customerDetailsRepo.updatePackDirect(
                         s.getCustomerId(),
-                        s.getNewPackId()
+                        s.getNewPackId(),
+                        s.getUpcomingRenewalDate()
                 );
 
                 s.setProcessed(true);

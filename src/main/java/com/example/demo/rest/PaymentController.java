@@ -105,7 +105,7 @@ public class PaymentController {
 //				: ResponseEntity.status(400).body("Payment Verification Failed");
 //	}
 	
-	@PostMapping("/verifyy")
+	@PostMapping("/verify")
 	public ResponseEntity<List<Map<String, Object>>> verifyPayment(
 			@RequestParam String orderId, @RequestParam String paymentId,
 			@RequestParam String signature, @RequestParam List<Integer> customerIds,  
@@ -117,12 +117,7 @@ public class PaymentController {
 
 	    List<Map<String, Object>> results = new ArrayList<>();
 	    
-	 boolean   isrenewed = false;
-	 LocalDateTime renewedDate = null;
-	 int customerStatus = 0;
-	 
-	    
-	    
+
 
 	    for (Integer cusId : customerIds) {
 	        Map<String, Object> result = new HashMap<>();
@@ -158,142 +153,24 @@ public class PaymentController {
 
 	                walletRepository.save(wallet);
 
-	            } else {
-
-	                Wallet newWallet = new Wallet();
-	                newWallet.setCustomerId(cusId.longValue());
-	                newWallet.setAmount(paidAmount);
-	                newWallet.setLastPaymentDate(LocalDateTime.now());
-	                newWallet.setLastCustomizedAmount(paidAmount);
-
-	                walletRepository.save(newWallet);
-	            }
-	            }
-	            
-	            if (isRenewed==true) {
-	            	isrenewed = true;
-	            	renewedDate = LocalDateTime.now();
-	            	customerStatus = 6;
-	            }
-	            else {
-	            	isrenewed = false;
-	            	customerStatus = 5;
-	            }
-
-	           // LocalDateTime nextRenewDate = LocalDateTime.now().plusDays(30);
-	            
-	         // ✅ Calculate next renewal using 26 delivery days (excluding Sundays)
-	            LocalDate today = LocalDate.now();
-	            DayOfWeek day = today.getDayOfWeek();
-	            LocalDate nextRenewalLocalDate;
-	    	    if (day == DayOfWeek.FRIDAY) {
-	    	    	  nextRenewalLocalDate = calculateNextRenewalDate(today.plusDays(3));
-	    	    }
-	    	    else {
-	    	    	 nextRenewalLocalDate = calculateNextRenewalDate(today.plusDays(2));
-	    	    }
-	            
-
-	            // ✅ Convert to LocalDateTime (start of day)
-	            LocalDateTime nextRenewDate = nextRenewalLocalDate.atStartOfDay();
-
-	            
-	            int customized=0;
-	            customerDetailsRepo.updatePaymentStatus(
-	                    true, nextRenewDate, cusId, orderId, customerStatus, 
-	                    LocalDateTime.now(),customized,isrenewed,renewedDate
-	            );
-
-	            result.put("status", "Payment Verified");
-	        } else {
-	            payment.setStatus("FAILED");
-	            paymentDetailsrepo.save(payment);
-	            result.put("status", "Payment Verification Failed");
-	        }
-
-	        results.add(result);
-	    }
-
-	    return ResponseEntity.ok(results);
-	}
-
-	@PostMapping("/verify")
-	public ResponseEntity<List<Map<String, Object>>> verifyPayment(
-			@RequestParam String orderId, @RequestParam String paymentId,
-			@RequestParam String signature, @RequestParam List<Integer> customerIds
-//			,  
-//			@RequestParam(required = false) String promoCode,@RequestParam Long amount,
-//			@RequestParam Boolean isRenewed,@RequestParam Boolean isFromWallet
-			) {
-
-	    boolean isValid = paymentService.verifySignature(
-	    		orderId, paymentId, signature);
-
-	    List<Map<String, Object>> results = new ArrayList<>();
-	    
-	 boolean   isrenewed = false;
-	 LocalDateTime renewedDate = null;
-	 
-	 
-	    
-	    
-
-	    for (Integer cusId : customerIds) {
-	        Map<String, Object> result = new HashMap<>();
-	        result.put("customerId", cusId);
-	        result.put("orderId", orderId);
-
-	        PaymentDetails payment = new PaymentDetails();
-	        payment.setOrderId(orderId);
-	        payment.setCusId(cusId);
-	        payment.setPaymentId(paymentId);
-	        payment.setStatusId(1L);
-	        payment.setCreatedBy("User");
-	        payment.setCreatedTime(LocalDateTime.now());
-
-	        if (isValid) {
-	            payment.setStatus("SUCCESS");
-	            paymentDetailsrepo.save(payment);
-//	            
-//	            if(isFromWallet) {
-//	         // ✅ Wallet Update Logic
-//	            BigDecimal paidAmount = new BigDecimal(amount); // get real amount dynamically
-//
-//	            Optional<Wallet> existingWallet = walletRepository.findByCustomerId(cusId.longValue());
-//
-//	            if (existingWallet.isPresent()) {
-//
-//	                Wallet wallet = existingWallet.get();
-//
-//	                BigDecimal updatedAmount = wallet.getAmount().add(paidAmount);
-//	                wallet.setAmount(updatedAmount);
-//	                wallet.setLastPaymentDate(LocalDateTime.now());
-//	                wallet.setLastpaidAmount(amount);
-//
-//	                walletRepository.save(wallet);
-//
-//	            } else {
+	            } 
+//	            else {
 //
 //	                Wallet newWallet = new Wallet();
 //	                newWallet.setCustomerId(cusId.longValue());
 //	                newWallet.setAmount(paidAmount);
 //	                newWallet.setLastPaymentDate(LocalDateTime.now());
-//	                newWallet.setLastpaidAmount(amount);
+//	                newWallet.setLastCustomizedAmount(paidAmount);
 //
 //	                walletRepository.save(newWallet);
 //	            }
-//	            }
+	            }
 	            
-//	            if (isRenewed==true) {
-//	            	isrenewed = true;
-//	            	renewedDate = LocalDateTime.now();
-//	            	customerStatus = 6;
-//	            }
-//	            else {
-//	            	isrenewed = false;
-//	            	customerStatus = 5;
-//	            }
+	            if (isRenewed==true||isFromWallet) {
+	            	result.put("status", "Payment Verified");
+	            }
 
+	            else {
 	           // LocalDateTime nextRenewDate = LocalDateTime.now().plusDays(30);
 	            
 	         // ✅ Calculate next renewal using 26 delivery days (excluding Sundays)
@@ -311,15 +188,15 @@ public class PaymentController {
 	            // ✅ Convert to LocalDateTime (start of day)
 	            LocalDateTime nextRenewDate = nextRenewalLocalDate.atStartOfDay();
 
-	            int customerStatus = 5;
+	             int customerStatus = 5;
 	            int customized=0;
 	            customerDetailsRepo.updatePaymentStatus(
 	                    true, nextRenewDate, cusId, orderId, customerStatus, 
-	                    LocalDateTime.now(),customized,isrenewed,renewedDate
+	                    LocalDateTime.now(),customized
 	            );
 
 	            result.put("status", "Payment Verified");
-	        } else {
+	        }} else {
 	            payment.setStatus("FAILED");
 	            paymentDetailsrepo.save(payment);
 	            result.put("status", "Payment Verification Failed");
@@ -330,6 +207,120 @@ public class PaymentController {
 
 	    return ResponseEntity.ok(results);
 	}
+//
+//	@PostMapping("/verify")
+//	public ResponseEntity<List<Map<String, Object>>> verifyPayment(
+//			@RequestParam String orderId, @RequestParam String paymentId,
+//			@RequestParam String signature, @RequestParam List<Integer> customerIds
+////			,  
+////			@RequestParam(required = false) String promoCode,@RequestParam Long amount,
+////			@RequestParam Boolean isRenewed,@RequestParam Boolean isFromWallet
+//			) {
+//
+//	    boolean isValid = paymentService.verifySignature(
+//	    		orderId, paymentId, signature);
+//
+//	    List<Map<String, Object>> results = new ArrayList<>();
+//	    
+//	 boolean   isrenewed = false;
+//	 LocalDateTime renewedDate = null;
+//	 
+//	 
+//	    
+//	    
+//
+//	    for (Integer cusId : customerIds) {
+//	        Map<String, Object> result = new HashMap<>();
+//	        result.put("customerId", cusId);
+//	        result.put("orderId", orderId);
+//
+//	        PaymentDetails payment = new PaymentDetails();
+//	        payment.setOrderId(orderId);
+//	        payment.setCusId(cusId);
+//	        payment.setPaymentId(paymentId);
+//	        payment.setStatusId(1L);
+//	        payment.setCreatedBy("User");
+//	        payment.setCreatedTime(LocalDateTime.now());
+//
+//	        if (isValid) {
+//	            payment.setStatus("SUCCESS");
+//	            paymentDetailsrepo.save(payment);
+////	            
+////	            if(isFromWallet) {
+////	         // ✅ Wallet Update Logic
+////	            BigDecimal paidAmount = new BigDecimal(amount); // get real amount dynamically
+////
+////	            Optional<Wallet> existingWallet = walletRepository.findByCustomerId(cusId.longValue());
+////
+////	            if (existingWallet.isPresent()) {
+////
+////	                Wallet wallet = existingWallet.get();
+////
+////	                BigDecimal updatedAmount = wallet.getAmount().add(paidAmount);
+////	                wallet.setAmount(updatedAmount);
+////	                wallet.setLastPaymentDate(LocalDateTime.now());
+////	                wallet.setLastpaidAmount(amount);
+////
+////	                walletRepository.save(wallet);
+////
+////	            } else {
+////
+////	                Wallet newWallet = new Wallet();
+////	                newWallet.setCustomerId(cusId.longValue());
+////	                newWallet.setAmount(paidAmount);
+////	                newWallet.setLastPaymentDate(LocalDateTime.now());
+////	                newWallet.setLastpaidAmount(amount);
+////
+////	                walletRepository.save(newWallet);
+////	            }
+////	            }
+//	            
+////	            if (isRenewed==true) {
+////	            	isrenewed = true;
+////	            	renewedDate = LocalDateTime.now();
+////	            	customerStatus = 6;
+////	            }
+////	            else {
+////	            	isrenewed = false;
+////	            	customerStatus = 5;
+////	            }
+//
+//	           // LocalDateTime nextRenewDate = LocalDateTime.now().plusDays(30);
+//	            
+//	         // ✅ Calculate next renewal using 26 delivery days (excluding Sundays)
+//	            LocalDate today = LocalDate.now();
+//	            DayOfWeek day = today.getDayOfWeek();
+//	            LocalDate nextRenewalLocalDate;
+//	    	    if (day == DayOfWeek.FRIDAY) {
+//	    	    	  nextRenewalLocalDate = calculateNextRenewalDate(today.plusDays(3));
+//	    	    }
+//	    	    else {
+//	    	    	 nextRenewalLocalDate = calculateNextRenewalDate(today.plusDays(2));
+//	    	    }
+//	            
+//
+//	            // ✅ Convert to LocalDateTime (start of day)
+//	            LocalDateTime nextRenewDate = nextRenewalLocalDate.atStartOfDay();
+//
+//	            int customerStatus = 5;
+//	            int customized=0;
+//	            customerDetailsRepo.updatePaymentStatus(
+//	                    true, nextRenewDate, cusId, orderId, customerStatus, 
+//	                    LocalDateTime.now(),customized,isrenewed,renewedDate
+//	            );
+//
+//	            result.put("status", "Payment Verified");
+//	        } else {
+//	            payment.setStatus("FAILED");
+//	            paymentDetailsrepo.save(payment);
+//	            result.put("status", "Payment Verification Failed");
+//	        }
+//
+//	        results.add(result);
+//	    }
+//
+//	    return ResponseEntity.ok(results);
+//	}
 	
 	public LocalDate calculateNextRenewalDate(LocalDate startDate) {
 
