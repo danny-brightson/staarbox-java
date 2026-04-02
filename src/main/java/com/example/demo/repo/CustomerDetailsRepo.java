@@ -58,28 +58,55 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	        LocalDate applyDate
 	);
 
-	
+
 	@Transactional
 	@Modifying
 	@Query(value = """
-	        UPDATE customerdetails
-	           SET IsPaymentSuccess = :isPaymentSuccess,
-	               NextRenewalDate   = :nextRenewalDate,
-	               OrderId           = :orderId,
-	               CustomerStatusId  = :customerStatus,
-	               paymentDoneTime   = :paymentDoneTime,
-	               IsCustomized      = :isCustomized
-	         WHERE Id = :customerId
-	           AND StatusId = 1
-	        """,
-	       nativeQuery = true)
+			UPDATE customerdetails
+			SET IsPaymentSuccess = :isPaymentSuccess,
+				NextRenewalDate   = :nextRenewalDate,
+				OrderId           = :orderId,
+				CustomerStatusId  = :customerStatus,
+				paymentDoneTime   = :paymentDoneTime,
+				IsCustomized      = :isCustomized,
+				IsRenewed         = :isRenewed,
+				RenewedDate       = :renewedDate,
+				StatusId          = 1
+			WHERE Id = :customerId
+			""",
+		nativeQuery = true)
 	int updatePaymentStatus(@Param("isPaymentSuccess") boolean isPaymentSuccess,
-	                        @Param("nextRenewalDate")  LocalDateTime nextRenewalDate,
-	                        @Param("customerId")       Integer customerId,
-	                        @Param("orderId")          String orderId,
-	                        @Param("customerStatus")   int customerStatus,
-	                        @Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
-	                        @Param("isCustomized")  int isCustomized);
+							@Param("nextRenewalDate")  LocalDateTime nextRenewalDate,
+							@Param("customerId")       Integer customerId,
+							@Param("orderId")          String orderId,
+							@Param("customerStatus")   int customerStatus,
+							@Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
+							@Param("isCustomized")     int isCustomized,
+							@Param("isRenewed")        boolean isRenewed,
+							@Param("renewedDate")      LocalDateTime renewedDate);
+
+	
+	// @Transactional
+	// @Modifying
+	// @Query(value = """
+	//         UPDATE customerdetails
+	//            SET IsPaymentSuccess = :isPaymentSuccess,
+	//                NextRenewalDate   = :nextRenewalDate,
+	//                OrderId           = :orderId,
+	//                CustomerStatusId  = :customerStatus,
+	//                paymentDoneTime   = :paymentDoneTime,
+	//                IsCustomized      = :isCustomized
+	//          WHERE Id = :customerId
+	//            AND StatusId = 1
+	//         """,
+	//        nativeQuery = true)
+	// int updatePaymentStatus(@Param("isPaymentSuccess") boolean isPaymentSuccess,
+	//                         @Param("nextRenewalDate")  LocalDateTime nextRenewalDate,
+	//                         @Param("customerId")       Integer customerId,
+	//                         @Param("orderId")          String orderId,
+	//                         @Param("customerStatus")   int customerStatus,
+	//                         @Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
+	//                         @Param("isCustomized")  int isCustomized);
 
 //	    @Query("SELECT new com.example.demo.dto.PackagingDto(c.id, c.zoneId, c.distanceId, c.districtId, c.deliveryCode, c.packDetailsId) " +
 //	    	       "FROM CustomerDetails c " +
