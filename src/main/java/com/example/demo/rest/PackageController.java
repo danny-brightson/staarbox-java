@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.example.demo.dto.FinalPackDto;
 import com.example.demo.dto.PackNamesRequest;
 import com.example.demo.dto.PlanCountDto;
@@ -24,7 +25,8 @@ import com.example.demo.projection.QrCodeProjection;
 import com.example.demo.repo.AvailablePromoCodeRepo;
 import com.example.demo.repo.PackagingRepo;
 import com.example.demo.service.PackagingService;
-import com.example.demo.util.QRCodeGenerator;
+// import com.example.demo.util.QRCodeGenerator;
+
 
 @RestController
 @RequestMapping("/api")
@@ -36,8 +38,8 @@ public class PackageController {
 	@Autowired
 	private PackagingRepo packagingRepo;
 
-	@Autowired
-	private QRCodeGenerator qRCodeGenerator;
+	// @Autowired
+	// private QRCodeGenerator qRCodeGenerator;
 
 
 	
@@ -85,7 +87,8 @@ public class PackageController {
 	         request.getPackerId(),
 	         request.getProductNames(),
 	         request.getDistrictId()
-	     );
+			 );
+
 	     return ResponseEntity.ok("Packed items updated.");
 	 }
 	 @PostMapping("/generatePackaging/{customerId}")
@@ -109,5 +112,11 @@ public class PackageController {
 	    public String PackVerification(@RequestParam int districtId,@RequestParam long boxnumber) {
 		 return packagingService.PackVerification(districtId,boxnumber);
 	    }
-	 
-}
+		
+	@PostMapping("/generate-batch")
+    public String generateBatch(@RequestParam int weekdayId) {
+    packagingService.generateBatchByWeekday(weekdayId);
+        return "Batch generated for weekday: " + weekdayId;
+	}
+}		
+

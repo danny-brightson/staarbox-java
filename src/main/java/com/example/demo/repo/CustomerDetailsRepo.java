@@ -186,7 +186,13 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 		@Query(value = "SELECT paymentDoneTime  FROM customerdetails WHERE IsRenewed = 0 AND id =:customerId AND IsPaymentSuccess = 1 and StatusId=1;", nativeQuery = true)
 		LocalDateTime  checkCustomaizationEnable(int customerId);
 
-		
+		@Query(value = """
+			SELECT id FROM customerdetails 
+			WHERE IsPaymentSuccess = 1 
+			AND StatusId = 1 
+			AND NextRenewalDate >= CURRENT_DATE
+			""", nativeQuery = true)
+		List<Long> findCustomerIdsByWeekday(@Param("weekdayId") int weekdayId);
 
 		@Modifying
 		@Transactional

@@ -181,6 +181,17 @@ public class CustomerDetails {
 	@Column(name = "IsDiabetic")
 	private Boolean isDiabetic;
 
+	@Column(name = "weekday")
+	private Integer weekday;
+
+	public Integer getWeekday() {
+		return weekday;
+	}
+	public void setWeekday(Integer weekday) {
+		this.weekday = weekday;
+	}
+	 
+	
 	
 	public CustomerDetails() {
 		super();

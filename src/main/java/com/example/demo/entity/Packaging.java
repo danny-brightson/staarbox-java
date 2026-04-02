@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
+
 @SuppressWarnings("deprecation")
 @Entity
 @Table(name = "stagingpackaging")
@@ -63,6 +64,16 @@ public class Packaging {
 	@Column(name = "ModefiedTime")
 	private LocalDate modefiedTime;
 
+	@Column(name = "weekday")
+	private Integer weekday;
+
+	public Integer getWeekday() {
+		return weekday;
+	}
+
+	public void setWeekday(Integer weekday) {
+		this.weekday = weekday;
+	}
 	
 	// getters and setters
 	public Long getId() {
