@@ -21,6 +21,7 @@ import com.example.demo.dto.OptionalIngredientDto;
 import com.example.demo.dto.PackageResponseDto;
 import com.example.demo.entity.CustomerDetails;
 import com.example.demo.entity.CustomizedPackageDetails;
+import com.example.demo.entity.LkpFruitAndNuts;
 import com.example.demo.repo.CommonandPragnentpackDetailsRepo;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.example.demo.repo.CustomizedpackagedetailsRepo;
@@ -537,9 +538,9 @@ public class CustomaizationService {
 
 			LocalDateTime businessDate = LocalDateTime.now().plusDays(1);
 			System.out.println(businessDate);
-			// DayOfWeek day = LocalDateTime.now().getDayOfWeek();
+			 DayOfWeek day = LocalDateTime.now().getDayOfWeek();
 
-			DayOfWeek day = businessDate.getDayOfWeek();
+			//DayOfWeek day = businessDate.getDayOfWeek();
 			int weekday = 0;
 			if (day.getValue() == 7) {
 				weekday = 1;
@@ -572,18 +573,39 @@ public class CustomaizationService {
 			// entity.setIsEggAdded(request.getEggAdded());
       
 			// Egg or seed
-			if (request.getEggOrSeed() != null && request.getEggOrSeed().getId() != null) {
-			    entity.setEggOrSeed(request.getEggOrSeed().getId().intValue());
-			    // entity.setEggOrSeedWeight(request.getEggOrSeed().getWeight());
-				entity.setEggOrSeedWeight(String.valueOf(request.getEggOrSeed().getWeight()));
+//			if (request.getEggOrSeed() != null && request.getEggOrSeed().getId() != null) {
+//			    entity.setEggOrSeed(request.getEggOrSeed().getId().intValue());
+//			    // entity.setEggOrSeedWeight(request.getEggOrSeed().getWeight());
+//				entity.setEggOrSeedWeight(String.valueOf(request.getEggOrSeed().getWeight()));
+//			}
+			if (request.getEggOrSeed() != null) {
+			    Integer id = resolveId(
+			        request.getEggOrSeed().getId(),
+			        request.getEggOrSeed().getName()
+			    );
+
+			    if (id != null) {
+			        entity.setEggOrSeed(id);
+			        entity.setEggOrSeedWeight(String.valueOf(request.getEggOrSeed().getWeight()));
+			    }
 			}
 
 
 			// Sandwich
-			if (request.getSandwich() != null && request.getSandwich().getId() != null) {
-			    entity.setSandwichId(request.getSandwich().getId().intValue());
-			}
+//			if (request.getSandwich() != null && request.getSandwich().getId() != null) {
+//			    entity.setSandwichId(request.getSandwich().getId().intValue());
+//			}
+			
+			if (request.getSandwich() != null) {
+			    Integer id = resolveId(
+			        request.getSandwich().getId(),
+			        request.getSandwich().getName()
+			    );
 
+			    if (id != null) {
+			        entity.setSandwichId(id);
+			    }
+			}
 
 			// Fruits
 			List<IngredientDto> fruits = request.getFruits();
@@ -593,9 +615,12 @@ public class CustomaizationService {
 
 			        IngredientDto fruit = fruits.get(i);
 
-			        if (fruit.getId() == null) continue;
+			       // if (fruit.getId() == null) continue;
+			        
+			        Integer fruitId = resolveId(fruit.getId(), fruit.getName());
+			        if (fruitId == null) continue; // just safety
 
-			        int fruitId = fruit.getId().intValue();
+			        // fruitId = fruit.getId().intValue();
 			        String weight = fruit.getWeight();
 
 			        switch (i) {
@@ -636,9 +661,13 @@ public class CustomaizationService {
 
 			        IngredientDto nut = nuts.get(i);
 
-			        if (nut.getId() == null) continue;
-
-			        int nutId = nut.getId().intValue();
+//			        if (nut.getId() == null) continue;
+//
+//			        int nutId = nut.getId().intValue();
+			        
+			        Integer nutId = resolveId(nut.getId(), nut.getName());
+			        if (nutId == null) continue;
+			        
 			        String weight = nut.getWeight();
 
 			        switch (i) {
@@ -674,9 +703,13 @@ public class CustomaizationService {
 
 			        OptionalIngredientDto opt = optionalItems.get(i);
 
-			        if (opt == null || opt.getId() == null) continue;
-
-			        int id = opt.getId().intValue();
+//			        if (opt == null || opt.getId() == null) continue;
+//
+//			        int id = opt.getId().intValue();
+			        
+			       Integer id = resolveId(opt.getId(), opt.getName());
+			        if (id == null) continue;
+			        
 			        String weight = opt.getWeight() != null ? opt.getWeight() : "0";
 			        Boolean isFruit = opt.getIsFruit() != null ? opt.getIsFruit() : false;
 
@@ -744,4 +777,19 @@ public class CustomaizationService {
 	 return false;
         }
     }
+	public int getFruitOrNutId(String fruitAndNuts) {
+		System.out.println(fruitAndNuts);
+		return lkpFruitAndNutsRepo.findByFruitAndNutsIgnoreCase(fruitAndNuts).map(LkpFruitAndNuts::getId)
+				.orElseThrow(() -> new RuntimeException("Fruit/Nut not found: " + fruitAndNuts));
+	}
+	private Integer resolveId(Long id, String name) {
+	    if (id != null) {
+	        return id.intValue(); //  use ID directly
+	    }
+	    if (name != null && !name.isBlank()) {
+	        return getFruitOrNutId(name); //  fallback to name
+	    }
+	    return null;
+	}
+	
 }    
