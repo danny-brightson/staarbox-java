@@ -310,7 +310,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 			       "FROM CustomerDetails c " +
 			       "WHERE c.id = :customerId")
 			CustomerPackDistrictProjection 
-			findPackAndDistrictByCustomerId(Long customerId);
+			findPackAndDistrictByCustomerId(@Param("customerId") Long customerId);
 
 			@Query(value = "SELECT customized_amount FROM customerdetails WHERE Id = :customerId AND DATE(ModefiedTime) = CURDATE() - INTERVAL 1 DAY", nativeQuery = true)
 			Long getYesterdayCustomizedAmount(@Param("customerId") Long customerId);
@@ -324,24 +324,26 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 			@Query(value="SELECT districtId FROM customerdetails WHERE id=:customerId", nativeQuery=true)
 			Integer findDistrictIdByCustomerId(@Param("customerId") Long customerId);
 
-@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
-	LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
+	@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
+		LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
 
-	@Transactional
+	@Query(value = "SELECT PromoCodeUsed FROM customerdetails WHERE Id = :customerId", nativeQuery = true)
+	String getPromoCodeUsed(@Param("customerId") Long customerId);
+			
+
 @Modifying
+@Transactional
 @Query("UPDATE CustomerDetails c " +
        "SET c.packDetailsId = :packId, " +
        "    c.paymentDoneTime = CURRENT_TIMESTAMP, " +
        "    c.nextrenewalDate = :nextRenewalDate, " +
        "    c.isRenewed = true " +
        "WHERE c.id = :customerId")
-void updatePackDirect(@Param("customerId") Long customerId,
-                      @Param("packId") Long packId,
-                      @Param("nextRenewalDate") LocalDateTime nextRenewalDate);
-
-
-}
-		
+void updatePackDirect(
+        @Param("customerId") Long customerId,
+        @Param("packId") Long packId,
+        @Param("nextRenewalDate") LocalDateTime nextRenewalDate);
+}		
 		
 
 		

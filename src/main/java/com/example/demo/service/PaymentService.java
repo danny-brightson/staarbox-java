@@ -1,24 +1,19 @@
 package com.example.demo.service;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.CustomerDetails;
+import com.example.demo.projection.CustomerPackDistrictProjection;
 import com.example.demo.repo.CustomerDetailsRepo;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
-import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
 
 @Service
@@ -38,6 +33,13 @@ public class PaymentService {
 	}
 
 	public Map<String, Object> createOrder(int amount, String currency, String receipt, long customerId) throws Exception {
+
+		CustomerPackDistrictProjection data =
+            customerRepo.findPackAndDistrictByCustomerId(customerId);
+
+    if (data == null || data.getDistrictId() == null || data.getPackDetailsId() == null) {
+        throw new RuntimeException("District or Package not found for customer");
+    }
 		JSONObject options = new JSONObject();
 		options.put("amount", amount * 100); // convert ₹ to paise
 		options.put("currency", currency);
@@ -47,8 +49,13 @@ public class PaymentService {
 		Order order = client.orders.create(options);
 		String orderId = order.get("id").toString();
 		 Optional<CustomerDetails> cust = customerRepo.findById(customerId);
-		 
-		
+
+		 if (cust.isEmpty()) {
+				throw new RuntimeException("Customer not found");
+			}
+
+		CustomerDetails customer = cust.get();	
+					
 		  Map<String, Object> response = new HashMap<>();
 		    response.put("orderId", orderId);
 		    response.put("amount", amount);

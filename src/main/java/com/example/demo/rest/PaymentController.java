@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.entity.AvailablePromoCode;
 import com.example.demo.entity.PaymentDetails;
 import com.example.demo.entity.Wallet;
 import com.example.demo.repo.AvailablePromoCodeRepo;
@@ -176,7 +177,34 @@ public class PaymentController {
             int days = division[0].intValue();
             BigDecimal remainingAmount = division[1];
 
-            // Step 7: Remaining amount wallet-ல save
+            // 🔥 PROMO APPLY LOGIC (FIXED)
+            boolean isPromoApplied = false;
+
+            if (promoCode != null && !promoCode.isEmpty()) {
+
+                Optional<AvailablePromoCode> promoOpt =
+                        availablePromoCodeRepo.findValidPromo(promoCode);
+
+                if (promoOpt.isEmpty()) {
+                    result.put("status", "Invalid or Already Used Promo");
+                    results.add(result);
+                    continue;
+                }
+
+                AvailablePromoCode promo = promoOpt.get();
+
+                // 100% discount logic
+                if (promoCode.equalsIgnoreCase("KAC100")) {
+                    days = days + 30;
+                }
+
+                // 🔥 GLOBAL ONE TIME USE
+                promo.setIsValid(false);
+                availablePromoCodeRepo.save(promo);
+
+                isPromoApplied = true;
+            }
+            // Step 7: Remaining amount wallet save
             Optional<Wallet> freshWalletOpt = walletRepository
                     .findByCustomerId(cusId.longValue());
             if (freshWalletOpt.isPresent()) {
@@ -198,6 +226,16 @@ public class PaymentController {
             LocalDate today = LocalDate.now();
             LocalDate renewalLocalDate = calculateRenewalFromDays(today, days);
             LocalDateTime nextRenewDate = renewalLocalDate.atStartOfDay();
+
+            // AFTER nextRenewDate calculation
+            // if (isPromoApplied) {
+                // TODO: Uncomment after adding applyFreeTrial method to CustomerDetailsRepo
+                // customerDetailsRepo.applyFreeTrial(
+                //     cusId.longValue(),
+                //     nextRenewDate,
+                //     promoCode
+                // );
+            // }
 
             // Step 9: Customer status
             boolean isrenewed = false;

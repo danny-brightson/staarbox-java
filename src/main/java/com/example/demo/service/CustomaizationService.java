@@ -789,7 +789,7 @@ public class CustomaizationService {
 	    if (name != null && !name.isBlank()) {
 	        return getFruitOrNutId(name); //  fallback to name
 	    }
-	    return null; // (won’t happen in your case)
+	    return null;
 	}
 	
 }    
