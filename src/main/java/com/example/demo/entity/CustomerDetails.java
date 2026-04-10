@@ -84,6 +84,9 @@ public class CustomerDetails {
 	@Column(name = "paymentDoneTime")
 	private LocalDateTime paymentDoneTime;
 
+	@Column(name = "promo_code_used")
+	private String promoCodeUsed;
+
 	@Column(name = "IsRenewed")
 	private boolean isRenewed;
 
@@ -180,13 +183,17 @@ public class CustomerDetails {
 	
 	@Column(name = "IsDiabetic")
 	private Boolean isDiabetic;
+	
+	@Column(name = "StartDate")
+	private LocalDate startDate;
+	
+	 
 
 	
 	public CustomerDetails() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
 
 	public CustomerDetails(Long id, String name, Date dateOfBirth, int age, String genderId, String addressLine1,
 			String addressLine2, String addressType, int districtId, int stateId, String pinCode, String phoneNumber,
@@ -199,7 +206,7 @@ public class CustomerDetails {
 			String newAddressLine2, String newAddressType, Integer newDistrictId, Integer newStateId, String newPinCode,
 			Integer newDelivaryTimingId, boolean isAddressPending, LocalDate addressUpdateApplyDate, Double newLatitude,
 			Double newLongitude, LocalDate cancelScheduledDate, Boolean isCancelled, LocalDate cancelRequestedDate,
-			Boolean isDiabetic) {
+			Boolean isDiabetic, LocalDate startDate) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -254,6 +261,7 @@ public class CustomerDetails {
 		this.isCancelled = isCancelled;
 		this.cancelRequestedDate = cancelRequestedDate;
 		this.isDiabetic = isDiabetic;
+		this.startDate = startDate;
 	}
 
 
@@ -264,9 +272,13 @@ public class CustomerDetails {
 
 
 
+	public LocalDate getStartDate() {
+		return startDate;
+	}
 
-
-
+	public void setStartDate(LocalDate startDate) {
+		startDate = startDate;
+	}
 
 	public Long getId() {
 		return id;
@@ -888,6 +900,13 @@ public class CustomerDetails {
 		this.isDiabetic = isDiabetic;
 	}
 	
+	public String getPromoCodeUsed() {
+    return promoCodeUsed;
+	}
+
+	public void setPromoCodeUsed(String promoCodeUsed) {
+		this.promoCodeUsed = promoCodeUsed;
+	}
 	
 	
 
