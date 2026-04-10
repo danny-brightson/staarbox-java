@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.entity.AvailablePromoCode;
 import com.example.demo.entity.PaymentDetails;
 import com.example.demo.entity.Wallet;
 import com.example.demo.projection.CustomerPackDistrictProjection;
