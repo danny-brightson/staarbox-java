@@ -1,7 +1,13 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "staging_renewal")
@@ -30,6 +36,15 @@ public class StagingRenewal {
     @Column(name = "processed")
     private Boolean processed = false;
 
+    @Column(name = "current_renewal_date")
+    private LocalDateTime currentRenewalDate;
+
+    @Column(name = "upcoming_renewal_date")
+    private LocalDateTime upcomingRenewalDate;
+
+    @Column(name = "renewal_start_date")
+    private LocalDateTime renewalStartDate;
+
     public Long getId() { return id; }
 
     public Long getCustomerId() { return customerId; }
@@ -49,4 +64,28 @@ public class StagingRenewal {
 
     public Boolean getProcessed() { return processed; }
     public void setProcessed(Boolean processed) { this.processed = processed; }
+
+    public LocalDateTime getCurrentRenewalDate() {
+    return currentRenewalDate;
+    }
+
+    public void setCurrentRenewalDate(LocalDateTime currentRenewalDate) {
+        this.currentRenewalDate = currentRenewalDate;
+    }
+
+    public LocalDateTime getUpcomingRenewalDate() {
+        return upcomingRenewalDate;
+    }
+
+    public void setUpcomingRenewalDate(LocalDateTime upcomingRenewalDate) {
+        this.upcomingRenewalDate = upcomingRenewalDate;
+    }
+
+    public LocalDateTime getRenewalStartDate() {
+        return renewalStartDate;
+    }
+
+    public void setRenewalStartDate(LocalDateTime renewalStartDate) {
+        this.renewalStartDate = renewalStartDate;
+    }
 }

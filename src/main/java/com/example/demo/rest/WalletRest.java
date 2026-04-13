@@ -23,6 +23,15 @@ public class WalletRest  {
 	@Autowired
     private WalletService walletService;
 
+	@Autowired
+	private com.example.demo.Scheduler.WalletDailyDeductionScheduler walletDailyDeductionScheduler;
+
+	@PostMapping("/wallet/trigger-deduction")
+	public ResponseEntity<String> triggerDeduction() {
+		walletDailyDeductionScheduler.runDailyWalletDeduction();
+		return ResponseEntity.ok("Deduction job triggered successfully");
+	}
+
 
 	@GetMapping("/recentActivity")
 	public ResponseEntity<RecentActivityResponse> recentActivity(
