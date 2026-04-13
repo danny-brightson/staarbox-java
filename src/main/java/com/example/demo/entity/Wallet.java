@@ -37,7 +37,16 @@ public class Wallet {
     @Column(name = "LastCustomizedAmount")
     private BigDecimal LastCustomizedAmount;
 
-    
+    @Column(name = "LastDeductedDate")
+    private LocalDateTime lastDeductedDate;
+
+
+    public LocalDateTime getLastDeductedDate() { 
+        return lastDeductedDate; 
+    }
+    public void setLastDeductedDate(LocalDateTime lastDeductedDate) { 
+        this.lastDeductedDate = lastDeductedDate; 
+    }
     
 
     // ?? Constructors

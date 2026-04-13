@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -60,6 +61,7 @@ public class SubscriptionService {
                   newPackId = currentPack; 
                }
              customerRepo.updatePackDirect(customerId, newPackId,upcomingDate);
+             customerRepo.updateStartDate(customerId, LocalDate.now());
              return "Pack updated directly";
          }
 

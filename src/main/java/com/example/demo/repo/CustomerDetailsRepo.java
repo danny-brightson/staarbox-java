@@ -62,30 +62,25 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	@Transactional
 	@Modifying
 	@Query(value = """
-			UPDATE customerdetails
-			SET IsPaymentSuccess = :isPaymentSuccess,
-				NextRenewalDate   = :nextRenewalDate,
-				OrderId           = :orderId,
-				CustomerStatusId  = :customerStatus,
-				paymentDoneTime   = :paymentDoneTime,
-				IsCustomized      = :isCustomized,
-				IsRenewed         = :isRenewed,
-				RenewedDate       = :renewedDate,
-				StatusId          = 1
-			WHERE Id = :customerId
-			""",
-		nativeQuery = true)
+	        UPDATE customerdetails
+	           SET IsPaymentSuccess = :isPaymentSuccess,
+	               NextRenewalDate   = :nextRenewalDate,
+	               OrderId           = :orderId,
+	               CustomerStatusId  = :customerStatus,
+	               paymentDoneTime   = :paymentDoneTime,
+	               IsCustomized      = :isCustomized
+	         WHERE Id = :customerId
+	           AND StatusId = 1
+	        """,
+	       nativeQuery = true)
 	int updatePaymentStatus(@Param("isPaymentSuccess") boolean isPaymentSuccess,
-							@Param("nextRenewalDate")  LocalDateTime nextRenewalDate,
-							@Param("customerId")       Integer customerId,
-							@Param("orderId")          String orderId,
-							@Param("customerStatus")   int customerStatus,
-							@Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
-							@Param("isCustomized")     int isCustomized,
-							@Param("isRenewed")        boolean isRenewed,
-							@Param("renewedDate")      LocalDateTime renewedDate);
+	                        @Param("nextRenewalDate")  LocalDateTime nextRenewalDate,
+	                        @Param("customerId")       Integer customerId,
+	                        @Param("orderId")          String orderId,
+	                        @Param("customerStatus")   int customerStatus,
+	                        @Param("paymentDoneTime")  LocalDateTime paymentDoneTime,
+	                        @Param("isCustomized")  int isCustomized);
 
-	
 	// @Transactional
 	// @Modifying
 	// @Query(value = """
@@ -324,33 +319,60 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 			@Query(value="SELECT districtId FROM customerdetails WHERE id=:customerId", nativeQuery=true)
 			Integer findDistrictIdByCustomerId(@Param("customerId") Long customerId);
 
-	@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
-		LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
+			@Query(value = "SELECT DATE(NextRenewalDate) FROM customerdetails WHERE id = :customerId AND StatusId = 1", nativeQuery = true)
+				LocalDate findNextRenewalDateByCustomerId(@Param("customerId") long customerId);
 
-	@Query(value = "SELECT PromoCodeUsed FROM customerdetails WHERE Id = :customerId", nativeQuery = true)
-	String getPromoCodeUsed(@Param("customerId") Long customerId);
+			@Query(value = "SELECT PromoCodeUsed FROM customerdetails WHERE Id = :customerId", nativeQuery = true)
+			String getPromoCodeUsed(@Param("customerId") Long customerId);
+					
+
+		@Modifying
+		@Transactional
+		@Query("UPDATE CustomerDetails c " +
+			"SET c.packDetailsId = :packId, " +
+			"    c.paymentDoneTime = CURRENT_TIMESTAMP, " +
+			"    c.nextrenewalDate = :nextRenewalDate, " +
+			"    c.isRenewed = true " +
+			"WHERE c.id = :customerId")
+		void updatePackDirect(@Param("customerId") Long customerId,
+							@Param("packId") Long packId,
+							@Param("nextRenewalDate") LocalDateTime nextRenewalDate);
+
+						
+		@Modifying
+		@Transactional
+		@Query(value = "UPDATE customerdetails SET StartDate = :startDate WHERE Id = :customerId", nativeQuery = true)
+		void updateStartDate(@Param("customerId") Long customerId,
+							@Param("startDate") LocalDate startDate);
+
+		@Query(value = """
+		SELECT id FROM customerdetails 
+		WHERE IsCustomized = 1 
+		AND StatusId = 1 
+		AND IsPaymentSuccess = 1
+		""", nativeQuery = true)
+			List<Long> findAllCustomizedCustomerIds();
+
+			@Query(value = """
+				SELECT id FROM customerdetails 
+				WHERE IsCustomized = 0 
+				AND StatusId = 1 
+				AND IsPaymentSuccess = 1
+				AND NextRenewalDate >= CURRENT_DATE
+				""", nativeQuery = true)
+			List<Long> findAllNonCustomizedActiveCustomerIds();
+
+
+
+	}
+			
 			
 
-@Modifying
-@Transactional
-@Query("UPDATE CustomerDetails c " +
-       "SET c.packDetailsId = :packId, " +
-       "    c.paymentDoneTime = CURRENT_TIMESTAMP, " +
-       "    c.nextrenewalDate = :nextRenewalDate, " +
-       "    c.isRenewed = true " +
-       "WHERE c.id = :customerId")
-void updatePackDirect(
-        @Param("customerId") Long customerId,
-        @Param("packId") Long packId,
-        @Param("nextRenewalDate") LocalDateTime nextRenewalDate);
-}		
-		
+			
+			
 
+			
 		
-		
-
-		
-	
 
 
 
