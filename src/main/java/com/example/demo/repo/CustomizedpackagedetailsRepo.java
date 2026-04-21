@@ -416,4 +416,15 @@ public interface CustomizedpackagedetailsRepo extends JpaRepository<CustomizedPa
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
+    @Query("""
+    SELECT c FROM CustomizedPackageDetails c
+    WHERE c.weekdaysId = :weekdayId
+    AND c.customizedDate >= :start
+    AND c.customizedDate < :end
+    """)
+    List<CustomizedPackageDetails> getTomorrowCustomizations(
+            @Param("weekdayId") int weekdayId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }

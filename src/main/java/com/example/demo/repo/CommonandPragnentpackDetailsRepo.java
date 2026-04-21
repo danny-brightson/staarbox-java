@@ -11,6 +11,8 @@ import com.example.demo.entity.CommonAndPragnentPackDetails;
 
 @Repository
 public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAndPragnentPackDetails, Long> {
+    // List<CommonAndPragnentPackDetails> findByWeekdaysId(Byte weekdaysId);
+    // List<CommonAndPragnentPackDetails> findByWeekdayId(Byte weekdayId);
 
 	@Query(value = """
 								   SELECT
@@ -248,9 +250,9 @@ public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAn
 			LEFT JOIN lkpfruitandnuts s  ON s.Id  = p.SandwichId
 
 			WHERE p.PackageTypeId = :packageTypeId
-			  AND p.WeekdayId = :weekdayId
+			  AND p.WeekdaysId = :weekdaysId
 								""", nativeQuery = true)
-	List<Object[]> getPackageItemView(@Param("packageTypeId") int packageTypeId, @Param("weekdayId") int weekdayId);
+	List<Object[]> getPackageItemView(@Param("packageTypeId") int packageTypeId, @Param("weekdaysId") int weekdaysId);
 
 	@Query(value = """
 				    SELECT
@@ -323,7 +325,10 @@ public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAn
 				    WHERE p.PackageTypeId = :packageTypeId
 				      AND p.WeekdayId = :weekdayId
 				""", nativeQuery = true)
-	List<Object[]> getPackStatusForCustomer(@Param("customerId") Long customerId,
+
+	    List<Object[]> getPackStatusForCustomer(@Param("customerId") Long customerId,
 			@Param("packageTypeId") Integer packageTypeId, @Param("weekdayId") Integer weekdayId);
 
+      @Query(value = "SELECT * FROM commonandPragnentpackDetails WHERE WeekdayId = :weekdayId AND StatusId = 1", nativeQuery = true)
+      List<CommonAndPragnentPackDetails> findByWeekdaysId(@Param("weekdayId") int weekdayId);
 }
