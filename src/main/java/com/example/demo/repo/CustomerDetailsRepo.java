@@ -362,8 +362,15 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 				""", nativeQuery = true)
 			List<Long> findAllNonCustomizedActiveCustomerIds();
 
-
-
+		// @Query("SELECT c FROM CustomerDetails c WHERE c.customerStatusId = 3 AND c.statusId = 1")
+		// List<CustomerDetails> findActiveTomorrowCustomers();
+		@Query(value = """
+			SELECT * FROM customerdetails 
+			WHERE IsPaymentSuccess = 1 
+			AND StatusId = 1 
+			AND NextRenewalDate >= CURRENT_DATE
+			""", nativeQuery = true)
+		List<CustomerDetails> findActiveTomorrowCustomers();
 	}
 			
 			
