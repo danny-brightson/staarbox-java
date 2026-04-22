@@ -88,10 +88,10 @@ public class PackageController {
 	     );
 	     return ResponseEntity.ok("Packed items updated.");
 	 }
-	 @PostMapping("/generatePackaging/{customerId}")
-	 	public String generatePackaging(@PathVariable Long customerId) {
-		return packagingService.generatePackaging(customerId);
-		}
+//	 @PostMapping("/generatePackaging/{customerId}")
+//	 	public String generatePackaging(@PathVariable Long customerId) {
+//		return packagingService.generatePackaging(customerId);
+//		}
 
 
 
@@ -100,10 +100,10 @@ public class PackageController {
 		 return packagingService.getNumberOfBox(districtId);
 	    }
 	 
-	 @GetMapping("/getDeliveryPersonDetails")
-	    public String getDeliveryPersonDetails(@RequestParam String PhoneNumber) {
-		 return packagingService.getDeliveryPersonDetails(PhoneNumber);
-	    }
+	//  @GetMapping("/getDeliveryPersonDetails")
+	//     public String getDeliveryPersonDetails(@RequestParam String PhoneNumber) {
+	// 	 return packagingService.getDeliveryPersonDetails(PhoneNumber);
+	//     }
 	 
 	 @GetMapping("/PackVerification")
 	    public String PackVerification(@RequestParam int districtId,@RequestParam long boxnumber) {

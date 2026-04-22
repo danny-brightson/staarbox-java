@@ -1,6 +1,7 @@
 package com.example.demo.rest;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Scheduler.WalletDeductionScheduler;
 import com.example.demo.dto.RecentActivityResponse;
 import com.example.demo.service.WalletService;
 
@@ -22,6 +24,17 @@ public class WalletRest  {
 	
 	@Autowired
     private WalletService walletService;
+	
+	
+	 @Autowired
+	    private WalletDeductionScheduler service;
+
+	    // ✅ Run for today
+	    @PostMapping("/deduct")
+	    public ResponseEntity<?> runToday() {
+	         service.walletDeductionScheduler();
+	        return ResponseEntity.ok("JOB run successfully");
+	    }
 
 
 	@GetMapping("/recentActivity")

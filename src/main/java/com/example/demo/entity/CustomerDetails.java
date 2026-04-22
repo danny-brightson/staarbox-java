@@ -84,9 +84,6 @@ public class CustomerDetails {
 	@Column(name = "paymentDoneTime")
 	private LocalDateTime paymentDoneTime;
 
-	@Column(name = "promo_code_used")
-	private String promoCodeUsed;
-
 	@Column(name = "IsRenewed")
 	private boolean isRenewed;
 
@@ -900,13 +897,6 @@ public class CustomerDetails {
 		this.isDiabetic = isDiabetic;
 	}
 	
-	public String getPromoCodeUsed() {
-    return promoCodeUsed;
-	}
-
-	public void setPromoCodeUsed(String promoCodeUsed) {
-		this.promoCodeUsed = promoCodeUsed;
-	}
 	
 	
 

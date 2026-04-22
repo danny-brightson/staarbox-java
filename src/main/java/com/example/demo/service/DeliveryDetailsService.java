@@ -8,11 +8,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.DeliveryPersonResponseDto;
+import com.example.demo.entity.DeliveryPersonDetails;
 import com.example.demo.entity.TodaysDeliveryDetails;
 import com.example.demo.repo.CustomerDetailsRepo;
+import com.example.demo.repo.DeliveryPersonDetailsRepo;
 import com.example.demo.repo.TodaysDeliveryDetailsRepo;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class DeliveryDetailsService {
@@ -20,6 +21,9 @@ public class DeliveryDetailsService {
 	@Autowired
 	private TodaysDeliveryDetailsRepo todaysDeliveryDetailsRepo;
 	
+	@Autowired
+	private DeliveryPersonDetailsRepo deliveryPersonDetailsRepo;
+
 	@Autowired
 	private CustomerDetailsRepo customerDetailsRepo;
 
@@ -73,6 +77,22 @@ public class DeliveryDetailsService {
 	    }
 	}
 
-	
+	public DeliveryPersonResponseDto getDeliveryPersonDetails(String phoneNumber) {
+
+		Optional<DeliveryPersonDetails> optional = deliveryPersonDetailsRepo.findByPhoneNumber(phoneNumber);
+
+		if (optional.isEmpty()) {
+			throw new RuntimeException("Delivery person not found for phone: " + phoneNumber);
+		}
+
+		DeliveryPersonDetails dp = optional.get();
+
+		return new DeliveryPersonResponseDto(
+			dp.getName(),
+			dp.getDistrictId(),
+			dp.getDeliveryCode()
+		);
+	}
+
 	
 }

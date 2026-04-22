@@ -1,5 +1,6 @@
 package com.example.demo.repo;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,34 +24,48 @@ public interface PackagingRepo extends JpaRepository<Packaging, Long> {
 //	void truncatePackagingTable();
 	
 	@Query(value = "SELECT QrCode as qrCode, NumberCode as numberCode,CustomerName as customerName FROM stagingpackaging  WHERE StatusId = 1 and DistrictId=:districtId", nativeQuery = true)
-	List<QrCodeProjection> fetchAllQrAndCodes(int districtId);
+	List<QrCodeProjection> fetchAllQrAndCodes(@Param("districtId")int districtId);
 
 	@Modifying
 	@Transactional
-	@Query(value = "DELETE FROM stagingpackaging WHERE districtId = :districtId", nativeQuery = true)
-	void deleteByDistrictId(@Param("districtId") int districtId);
+	@Query(value = "DELETE FROM stagingpackaging WHERE DistrictId = :districtId AND business_date = :businessdate", nativeQuery = true)
+	void deleteByDistrictId(@Param("districtId") int districtId,@Param("businessdate") LocalDate businessdate);
 
-
-	@Query(value = "SELECT * FROM stagingpackaging  WHERE StatusId = 1 and DistrictId=:districtId and BoxNumber=:boxnumber", nativeQuery = true)
-	Packaging findByDistrictIdandBoxNumber(int districtId, long boxnumber);
+	@Query(value = "SELECT * FROM stagingpackaging " +
+		       "WHERE StatusId = 1 " +
+		       "AND DistrictId = :districtId " +
+		       "AND BoxNumber = :boxnumber " +
+		       "AND business_date = :businessDate",
+		       nativeQuery = true)
+		Packaging findByDistrictIdandBoxNumber(
+		        @Param("districtId") int districtId,
+		        @Param("boxnumber") long boxnumber,
+		        @Param("businessDate") LocalDate businessDate
+		);
 	
 	
 	@Query(value = """
 		    SELECT 
-		        sp.PlanCode AS planCode, 
-		        COUNT(*) AS planCount,
-		        (SELECT COUNT(*) FROM stagingpackaging WHERE StatusId = 1 AND DistrictId = :districtId) AS totalBoxCount
-		    FROM stagingpackaging sp
-		    WHERE sp.StatusId = 1 AND sp.DistrictId = :districtId
-		    GROUP BY sp.PlanCode
+    sp.PlanCode AS planCode, 
+    COUNT(*) AS planCount,
+    SUM(COUNT(*)) OVER() AS totalBoxCount
+FROM stagingpackaging sp
+WHERE sp.StatusId = 1 
+  AND sp.DistrictId = :districtId
+GROUP BY sp.PlanCode
 		""", nativeQuery = true)
 		List<Object[]> getPlanCountsWithTotal(@Param("districtId") int districtId);
 		
 		@Transactional
 		@Modifying
 		@Query(value = "UPDATE stagingpackaging SET IsVerified = TRUE WHERE Id=:id AND StatusId = 1;", nativeQuery = true)
-		int updateVerification( Long id);
+		int updateVerification(@Param("id") Long id);
 
+		
+		@Query(value = "SELECT CustomerId FROM stagingpackaging WHERE StatusId = 1 AND business_date = :businessDate",nativeQuery = true)
+		List<Long> findTodayCustomerIds( @Param("businessDate") LocalDate businessDate);
+
+		
 
 
 	

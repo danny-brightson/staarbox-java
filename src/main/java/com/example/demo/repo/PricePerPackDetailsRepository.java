@@ -18,5 +18,13 @@ import com.example.demo.entity.PricePerPackDetails;
 	    BigDecimal findMinAmount(
 	            @Param("packId") Integer packId,
 	            @Param("districtId") Integer districtId);
+	 
+	 @Query("SELECT p.maxAmount FROM PricePerPackDetails p " +
+	           "WHERE p.lkpPackDetailsId = :packId " +
+	           "AND p.districtId = :districtId")
+	    BigDecimal findMaxAmount(
+	            @Param("packId") Integer packId,
+	            @Param("districtId") Integer districtId);
+	
 	
 }
