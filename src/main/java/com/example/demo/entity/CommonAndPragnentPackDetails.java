@@ -18,8 +18,6 @@ public class CommonAndPragnentPackDetails {
     @Column(name = "PackageTypeId", nullable = false)
     private Integer packageTypeId;
 
-    @Column(name = "WeekdayId", nullable = false)
-    private Byte weekdayId;
 
     @Column(name = "IsEggAdded", nullable = false)
     private Boolean isEggAdded;
@@ -126,14 +124,26 @@ public class CommonAndPragnentPackDetails {
     @Column(name = "SandwichId")
     private Integer sandwichId;
 
-
     @Column(name = "Fruit6Id")
     private Integer fruit6Id;
     @Column(name = "Fruit6Weight")
     private String fruit6Weight;
-    public CommonAndPragnentPackDetails() {}
 
-    // Full constructor (optional)
+	@Column(name = "WeekdayId")
+	private Byte weekdayId;
+
+	public Byte getWeekdayId() {
+		return weekdayId;
+	}
+
+	public void setWeekdayId(Byte weekdayId) {
+		this.weekdayId = weekdayId;
+	}
+
+
+    public CommonAndPragnentPackDetails() {
+		
+	}
 
 
 	public Integer getId() {
@@ -202,14 +212,6 @@ public class CommonAndPragnentPackDetails {
 
 	public void setPackageTypeId(Integer packageTypeId) {
 		this.packageTypeId = packageTypeId;
-	}
-
-	public Byte getWeekdayId() {
-		return weekdayId;
-	}
-
-	public void setWeekdayId(Byte weekdayId) {
-		this.weekdayId = weekdayId;
 	}
 
 	public Boolean getIsEggAdded() {
@@ -507,11 +509,4 @@ public class CommonAndPragnentPackDetails {
 	public void setFruit6Weight(String fruit6Weight) {
 		this.fruit6Weight = fruit6Weight;
 	}
-	
-	
-
-    // Getters and Setters for all fields go here...
-    
-    
-    // (Let me know if you want them all generated too)
 }

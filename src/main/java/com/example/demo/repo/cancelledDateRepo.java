@@ -1,5 +1,6 @@
 package com.example.demo.repo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -15,15 +16,15 @@ import com.example.demo.entity.CancelledDate;
 public interface cancelledDateRepo extends JpaRepository<CancelledDate, Long>  {
 
 
-	 boolean existsByCustomerIdAndCancelledDate(Long customerId, LocalDateTime cancelledDate);
+	 boolean existsByCustomerIdAndCancelledDate(Long customerId, LocalDate businessDate);
 
-	 Optional<CancelledDate> findByCustomerIdAndCancelledDate(Long customerId, LocalDateTime cancelledDate);
+	 Optional<CancelledDate> findByCustomerIdAndCancelledDate(Long customerId, LocalDate cancelledDate);
 
 	 @Query("SELECT c.cancelledDate " +
 	           "FROM CancelledDate c " +
 	           "WHERE c.customerId = :customerId " +
 	           "AND c.statusId = 1")
-	    List<LocalDateTime> findActiveCancelledDates(
+	    List<LocalDate> findActiveCancelledDates(
 	            @Param("customerId") Long customerId);
 	
 	 

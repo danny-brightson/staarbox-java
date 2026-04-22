@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.DeliveryPersonResponseDto;
 import com.example.demo.entity.TodaysDeliveryDetails;
-import com.example.demo.repo.DailyTaglineRepo;
 import com.example.demo.service.DeliveryDetailsService;
 
 @RestController
@@ -36,5 +36,10 @@ public class DeliveryDetailsRest {
 	    		@RequestParam boolean isDelivered,@RequestParam(required = false) int reasonId) {
 		 return deliveryDetailsService.UpdateDeliverdStatus(boxnumber,phoneNumber,isDelivered,reasonId);
 	    }
-    
+
+	@GetMapping("/getDeliveryPersonDetails")
+	public DeliveryPersonResponseDto getDeliveryPersonDetails(
+			@RequestParam("PhoneNumber") String phoneNumber) {
+		return deliveryDetailsService.getDeliveryPersonDetails(phoneNumber);
+	}
 }

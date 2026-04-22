@@ -23,6 +23,9 @@ public class DeliveryPersonDetails {
 	@Column(name = "Id")
 	private Long id;
 
+	@Column(name = "Name")
+	private String name;
+
 	@Column(name = "PhoneNumber")
 	private String phoneNumber;
 	
@@ -83,6 +86,14 @@ public class DeliveryPersonDetails {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getName() {
+    return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getPhoneNumber() {

@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,7 +38,6 @@ import com.example.demo.entity.LkpFruitAndNuts;
 import com.example.demo.entity.LkpPackDetails;
 import com.example.demo.entity.Packaging;
 import com.example.demo.entity.PackerItemStatus;
-import com.example.demo.entity.StagingPackaging;
 import com.example.demo.entity.TodaysDeliveryDetails;
 import com.example.demo.entity.Wallet;
 import com.example.demo.projection.QrCodeProjection;
@@ -52,7 +52,6 @@ import com.example.demo.repo.LkpPackDetailsRepo;
 import com.example.demo.repo.PackageTypeRepo;
 import com.example.demo.repo.PackagingRepo;
 import com.example.demo.repo.PackerItemStatusRepo;
-import com.example.demo.repo.StagingPackagingRepo;
 import com.example.demo.repo.TodaysDeliveryDetailsRepo;
 import com.example.demo.repo.WalletRepository;
 import com.example.demo.repo.cancelledDateRepo;
@@ -74,7 +73,7 @@ public class PackagingService {
 	// private CustomerDetailsRepo customerDetailsRepo;
 
 	@Autowired
-	private StagingPackagingRepo stagingPackagingRepo;
+	private PackagingRepo stagingPackagingRepo;
 	
 	@Autowired
 	private LkpPackDetailsRepo lkpPackDetailsRepo;
@@ -109,6 +108,9 @@ public class PackagingService {
 	
 	@Autowired
 	private TodaysDeliveryDetailsRepo todaysDeliveryDetailsRepo;
+	
+	@Autowired
+    private cancelledDateRepo cancelledDateRepository;
 	
 	public List<PackagingDto> mapToPackagingDtos(List<Object[]> rawData) {
 		Map<String, Integer> map = new HashMap<>();
@@ -146,70 +148,175 @@ public class PackagingService {
 		return mapToPackagingDtos(rawData);
 	}
 
+//	public void generateCodesForPacking(int districtId) {
+//		LocalDateTime businessDate = LocalDateTime.now();
+//		DayOfWeek day = businessDate.getDayOfWeek();
+//		if (day == DayOfWeek.SUNDAY) {
+//		return;
+//		}
+//		System.out.println("Delivery Date: " + businessDate);
+//
+//		packagingRepo.deleteByDistrictId(districtId);
+//
+//		List<PackagingDto> customers = getSortedPackagesByDistrict(districtId);
+//		Map<Integer, Integer> districtBoxCounter = new HashMap<>();
+//
+//		for (PackagingDto customer : customers) {
+//			// ✅ Check NextRenewalDate >= deliveryDate
+//			LocalDate renewalDate = customerDetailsRepo
+//					.findNextRenewalDateByCustomerId(customer.getId());
+//			if (renewalDate == null || !renewalDate.isBefore(businessDate.toLocalDate())) {
+//				System.out.println("Skipping customer " + customer.getId() 
+//					+ " - renewal expired");
+//				continue;
+//			}
+//       // processWalletDeduction(customer.getId());		
+//			boolean isCancelled = cancelledDateRepository.existsByCustomerIdAndCancelledDate(
+//			        customer.getId(), businessDate);
+//			
+//			if (isCancelled) {
+//			    LocalDate nextRenewal = renewalDate.plusDays(1);
+//			    // Skip Sunday
+//			    if (nextRenewal.getDayOfWeek() == DayOfWeek.SUNDAY) {
+//			        nextRenewal = nextRenewal.plusDays(1);
+//			    }
+//			    customerDetailsRepo.updateRenewalDate(
+//			            customer.getId(),
+//			            nextRenewal
+//			    );
+//			    continue; // ❌ skip delivery
+//			}
+//
+//			try {
+//				Optional<LkpPackDetails> packageName = lkpPackDetailsRepo.findById((long) customer.getPackDetailsId());
+//				Optional<LkpAvailableDistrict> districtName = lkpAvailableDistrictRepo
+//						.findById((long) customer.getDistrictId());
+//
+//				String planCode = packageName.get().getPlanCode();
+//				
+//				if(customer .isPragnent()) {
+//					 planCode = "P"+ packageName.get().getPlanCode();
+//				}
+//				int currentDistrictId = customer.getDistrictId();
+//				int boxNumber = districtBoxCounter.getOrDefault(currentDistrictId, 0) + 1;
+//				districtBoxCounter.put(currentDistrictId, boxNumber);
+//				Packaging entity = new Packaging();
+//				entity.setCustomerId(customer.getId());
+//				entity.setCustomerName(customer.getName());
+//				entity.setDistrictId(currentDistrictId);
+//				entity.setBoxNumber((long) boxNumber);
+//				entity.setStatusId(1L);
+//				entity.setCreatedBy("User");
+//				entity.setCreatedTime(LocalDateTime.now());
+//				entity.setPlanCode(planCode);
+//				entity = packagingRepo.save(entity);
+//				String numberCode = entity.getBoxNumber()  + planCode +  "-"
+//						+ districtName.get().getDistrictCode() + "-" + customer.getDeliveryCode();
+//				byte[] qrImage = QRCodeGenerator.generateQRCode(String.valueOf(entity.getId()), 250, 250);
+//				entity.setQrCode(qrImage);
+//				entity.setNumberCode(numberCode);
+//				packagingRepo.save(entity);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 	public void generateCodesForPacking(int districtId) {
-		LocalDate deliveryDate = LocalDate.now().plusDays(1);
-		if (deliveryDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-			deliveryDate = deliveryDate.plusDays(1);
-		}
-		System.out.println("Delivery Date: " + deliveryDate);
 
-		packagingRepo.deleteByDistrictId(districtId);
+	    LocalDate businessDate = LocalDate.now();
 
-		List<PackagingDto> customers = getSortedPackagesByDistrict(districtId);
-		Map<Integer, Integer> districtBoxCounter = new HashMap<>();
+	    if (businessDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+	        return;
+	    }
 
-		for (PackagingDto customer : customers) {
+	    System.out.println("Delivery Date: " + businessDate);
 
-			// ✅ Check NextRenewalDate >= deliveryDate
-			LocalDate renewalDate = customerDetailsRepo
-					.findNextRenewalDateByCustomerId(customer.getId());
+	    packagingRepo.deleteByDistrictId(districtId, businessDate);
 
-			if (renewalDate == null || renewalDate.isBefore(deliveryDate)) {
-				System.out.println("Skipping customer " + customer.getId() 
-					+ " - renewal expired");
-				continue;
-			}
+	    List<PackagingDto> customers = getSortedPackagesByDistrict(districtId);
+	    Map<Integer, Integer> districtBoxCounter = new HashMap<>();
 
-        processWalletDeduction(customer.getId());
+	    for (PackagingDto customer : customers) {
 
-			try {
-				Optional<LkpPackDetails> packageName = lkpPackDetailsRepo.findById((long) customer.getPackDetailsId());
-				Optional<LkpAvailableDistrict> districtName = lkpAvailableDistrictRepo
-						.findById((long) customer.getDistrictId());
+	    	packerItemStatusRepo.deleteByCustomerId(customer.getId());
+	    	
+	        LocalDate renewalDate = customerDetailsRepo
+	                .findNextRenewalDateByCustomerId(customer.getId());
 
-				String planCode = packageName.get().getPlanCode();
-				
-				if(customer .isPragnent()) {
-					 planCode = "P"+ packageName.get().getPlanCode();
-				}
-				int currentDistrictId = customer.getDistrictId();
-				int boxNumber = districtBoxCounter.getOrDefault(currentDistrictId, 0) + 1;
-				districtBoxCounter.put(currentDistrictId, boxNumber);
 
-				Packaging entity = new Packaging();
-				entity.setCustomerId(customer.getId());
-				entity.setCustomerName(customer.getName());
-				entity.setDistrictId(currentDistrictId);
-				entity.setBoxNumber((long) boxNumber);
-				entity.setStatusId(1L);
-				entity.setCreatedBy("User");
-				entity.setCreatedTime(LocalDateTime.now());
-				entity.setPlanCode(planCode);
-				entity = packagingRepo.save(entity);
+	        if (renewalDate == null || renewalDate.isBefore(businessDate)) {
+	            System.out.println("Skipping customer " + customer.getId() 
+	                + " - subscription expired");
+	            continue;
+	        }
 
-				String numberCode = entity.getBoxNumber()  + planCode +  "-"
-						+ districtName.get().getDistrictCode() + "-" + customer.getDeliveryCode();
-				byte[] qrImage = QRCodeGenerator.generateQRCode(String.valueOf(entity.getId()), 250, 250);
+	        // ✅ Cancel check
+	        boolean isCancelled = cancelledDateRepository
+	                .existsByCustomerIdAndCancelledDate(customer.getId(), businessDate);
 
-				entity.setQrCode(qrImage);
-				entity.setNumberCode(numberCode);
+	        if (isCancelled) {
+	            LocalDate nextRenewal = renewalDate.plusDays(1);
 
-				packagingRepo.save(entity);
+	            while (nextRenewal.getDayOfWeek() == DayOfWeek.SUNDAY) {
+	                nextRenewal = nextRenewal.plusDays(1);
+	            }
+	            
+	            Date convertedDate = java.sql.Date.valueOf(nextRenewal);
 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	            customerDetailsRepo.updateRenewalDate(customer.getId(), convertedDate );
+	            continue;
+	        }
+
+	        try {
+	            Optional<LkpPackDetails> packageName = lkpPackDetailsRepo
+	                    .findById((long) customer.getPackDetailsId());
+
+	            Optional<LkpAvailableDistrict> districtName = lkpAvailableDistrictRepo
+	                    .findById((long) customer.getDistrictId());
+
+	            String planCode = packageName.get().getPlanCode();
+
+	            if (customer.isPragnent()) {
+	                planCode = "P" + planCode;
+	            }
+
+	            int currentDistrictId = customer.getDistrictId();
+	            int boxNumber = districtBoxCounter.getOrDefault(currentDistrictId, 0) + 1;
+	            districtBoxCounter.put(currentDistrictId, boxNumber);
+
+	            Packaging entity = new Packaging();
+	            entity.setCustomerId(customer.getId());
+	            entity.setCustomerName(customer.getName());
+	            entity.setDistrictId(currentDistrictId);
+	            entity.setBoxNumber((long) boxNumber);
+	            entity.setStatusId(1L);
+	            entity.setCreatedBy("User");
+	            entity.setCreatedTime(LocalDateTime.now());
+	            entity.setPlanCode(planCode);
+	            entity.setBusinessDate(businessDate); // ✅ SET HERE
+
+	            // ✅ FIRST SAVE (VERY IMPORTANT)
+	            entity = packagingRepo.save(entity);
+
+	            // NOW ID IS AVAILABLE
+	            String numberCode = entity.getBoxNumber() + planCode + "-"
+	                    + districtName.get().getDistrictCode() + "-"
+	                    + customer.getDeliveryCode();
+
+	            byte[] qrImage = QRCodeGenerator.generateQRCode(
+	                    String.valueOf(entity.getId()), 250, 250);
+
+	            // UPDATE REMAINING FIELDS
+	            entity.setQrCode(qrImage);
+	            entity.setNumberCode(numberCode);
+
+	            // ✅ SAVE AGAIN
+	            packagingRepo.save(entity);
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
 	
 	public boolean isCommon(boolean isPregnant, boolean isAllergic, boolean isCustomized) {
@@ -219,11 +326,10 @@ public class PackagingService {
 	    Long count = customizedpackagedetailsRepo.countCustomizedEntries(customerId, weekdayId, date);
 	    return count != null && count > 0;
 	}
-
-	
-	
 	public List<FinalPackDto> getPackageBoxlist(int districtId, long boxnumber) {
-		 Packaging data = packagingRepo.findByDistrictIdandBoxNumber(districtId,boxnumber);
+		LocalDate businessDate = LocalDate.now();
+		int weekday = businessDate.getDayOfWeek().getValue();
+		 Packaging data = packagingRepo.findByDistrictIdandBoxNumber(districtId,boxnumber,businessDate);
 		 if (data == null) {
 			 throw new RuntimeException("Box number does not exist for district: " + districtId);
 		 }
@@ -232,17 +338,17 @@ public class PackagingService {
 		CustomerDetails customer = customerDetailsRepo.findById(data.getCustomerId())
 				.orElseThrow(() -> new RuntimeException("Customer not found"));
 		System.out.println(data.getCustomerId());
-		LocalDate businessDate = LocalDate.now();
-		DayOfWeek day = businessDate.getDayOfWeek();
-		int weekday= day.getValue();
-	//    if (day.getValue() == 7) {
-	  //  	 weekday=1;
-	  //  }
-	   // else {
-	   // 	weekday = day.getValue() + 1;
-	   // }
+		
+//		DayOfWeek day = businessDate.getDayOfWeek();
+//		int weekday= day.getValue();
+//	//    if (day.getValue() == 7) {
+//	  //  	 weekday=1;
+//	  //  }
+//	   // else {
+//	   // 	weekday = day.getValue() + 1;
+//	   // }
 		System.out.println(businessDate);
-		System.out.println(weekday);
+		System.out.println(customer.getPackDetailsId());
 		boolean isCustomizedToday = doesCustomizedPackageExist(data.getCustomerId(),
 				Long.valueOf(weekday), businessDate);
 
@@ -250,12 +356,20 @@ public class PackagingService {
 
 		 Integer packageTypeId = null;
 
+		System.out.println(weekday);
+		System.out.println(businessDate);
+		System.out.println(isCommon);
+		System.out.println(customer.isPragnent());
+		System.out.println(customer.isAlergic());
+		System.out.println(isCustomizedToday);
+
+
 		    // Only fetch packageTypeId if it's not customized
 		    if (Boolean.FALSE.equals(isCustomizedToday)) {
 		    	Integer optionalTypeId = PackageTypeRepo.getPackageTypeId(
 		                customer.isPragnent(),
 		                customer.isAlergic(),
-		                customer.isCustomized(),
+		                isCustomizedToday,
 		                isCommon,
 		                customer.getPackDetailsId()
 		        ).orElse(0);
@@ -400,7 +514,7 @@ public class PackagingService {
 	    for (String name : productNames) {
 	        int productId = getFruitOrNutId(name);
 	        
-	   	 Packaging data = packagingRepo.findByDistrictIdandBoxNumber(districtId,boxNumber);
+	   	 Packaging data = packagingRepo.findByDistrictIdandBoxNumber(districtId,boxNumber,LocalDate.now());
 	   	 System.out.println(data.getNumberCode());
 
 	        Optional<PackerItemStatus> optional = packerItemStatusRepo
@@ -440,7 +554,7 @@ public class PackagingService {
 			    .collect(Collectors.toList());
 
 		return result;
-	}
+	} 
 
 	public String getDeliveryPersonDetails(String phoneNumber) {
 		Optional<DeliveryPersonDetails> deliveryperson  =deliveryPersonDetailsRepo.findByPhoneNumber(phoneNumber);
@@ -452,7 +566,7 @@ public class PackagingService {
 	}
 
 	public String PackVerification(int districtId, long boxnumber) {
-		Packaging packaging  = packagingRepo.findByDistrictIdandBoxNumber(districtId, boxnumber);
+		Packaging packaging  = packagingRepo.findByDistrictIdandBoxNumber(districtId, boxnumber,LocalDate.now());
 		 
 		
 		if (packaging.getIsVerified() == true) {
@@ -596,10 +710,11 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
             int y = TOP_PADDING;
 
             // NAME
+            String customerName = trimName(data.getCustomerName());
             g.setFont(nameFont);
             y += nameFM.getAscent();
-            int nameX = (WIDTH - nameFM.stringWidth(data.getCustomerName())) / 2;
-            g.drawString(data.getCustomerName(), nameX, y);
+            int nameX = (WIDTH - nameFM.stringWidth(customerName)) / 2;
+            g.drawString(customerName, nameX, y);
             y += nameFM.getDescent() + 6;
 
             // QR
@@ -628,6 +743,11 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
         }
     }
     return imageList;
+}
+
+private String trimName(String name) {
+    if (name == null) return "";
+    return name.length() > 10 ? name.substring(0, 10) : name;
 }
 
 	public void processWalletDeduction(Long customerId) {
@@ -664,64 +784,64 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
 		walletRepository.save(wallet);
 	}
 
-	public String generatePackaging(Long customerId){
-
-		System.out.println("Generating packaging for customer : " + customerId);
-
-		Integer districtId = customerDetailsRepo.findDistrictIdByCustomerId(customerId);
-
-		if(districtId == null){
-			return "Customer district not found";
-		}
-
-		generateCodesForPacking(customerId, districtId);
-
-		return "Daily package amount captured successfully";
-	}
-
-	public void generateCodesForPacking(Long customerId, Integer districtId){
-
-		System.out.println("Generating codes for district : " + districtId);
-
-		LocalDate deliveryDate = LocalDate.now().plusDays(1);
-
-		if (deliveryDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-			deliveryDate = deliveryDate.plusDays(1);
-		}
-
-		System.out.println("Delivery Date : " + deliveryDate);
-
-		LocalDate renewalDate = customerDetailsRepo
-				.findNextRenewalDateByCustomerId(customerId);
-
-		// Cancelled check
-		boolean isCancelled = cancelledDateRepo
-				.existsByCustomerIdAndCancelledDate(customerId, deliveryDate.atStartOfDay());
-
-		if (isCancelled) {
-			System.out.println("Skipping customer " + customerId + " - cancelled for date " + deliveryDate);
-			return;
-		}
-
-		if (renewalDate == null || renewalDate.isBefore(deliveryDate)) {
-			System.out.println("Skipping - renewal expired for customer: " + customerId);
-			return;
-		}
-
-		if(stagingPackagingRepo.existsByCustomerId(customerId)){
-			System.out.println("Packaging already generated for this customer");
-			return;
-		}
-
-		StagingPackaging sp = new StagingPackaging();
-		sp.setCustomerId(customerId);
-		sp.setDistrictId(districtId);
-		sp.setIsPacked(0);
-		sp.setStatusId(1);
-		sp.setCreatedBy("User");
-		sp.setCreatedTime(LocalDateTime.now());
-
-		stagingPackagingRepo.save(sp);
-	}
+//	public String generatePackaging(Long customerId){
+//
+//		System.out.println("Generating packaging for customer : " + customerId);
+//
+//		Integer districtId = customerDetailsRepo.findDistrictIdByCustomerId(customerId);
+//
+//		if(districtId == null){
+//			return "Customer district not found";
+//		}
+//
+//		generateCodesForPacking(customerId, districtId);
+//
+//		return "Daily package amount captured successfully";
+//	}
+//
+//	public void generateCodesForPacking(Long customerId, Integer districtId){
+//
+//		System.out.println("Generating codes for district : " + districtId);
+//
+//		LocalDate deliveryDate = LocalDate.now().plusDays(1);
+//
+//		if (deliveryDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+//			deliveryDate = deliveryDate.plusDays(1);
+//		}
+//
+//		System.out.println("Delivery Date : " + deliveryDate);
+//
+//		LocalDate renewalDate = customerDetailsRepo
+//				.findNextRenewalDateByCustomerId(customerId);
+//
+//		// Cancelled check
+//		boolean isCancelled = cancelledDateRepo
+//				.existsByCustomerIdAndCancelledDate(customerId, deliveryDate.atStartOfDay());
+//
+//		if (isCancelled) {
+//			System.out.println("Skipping customer " + customerId + " - cancelled for date " + deliveryDate);
+//			return;
+//		}
+//
+//		if (renewalDate == null || renewalDate.isBefore(deliveryDate)) {
+//			System.out.println("Skipping - renewal expired for customer: " + customerId);
+//			return;
+//		}
+//
+//		if(stagingPackagingRepo.existsByCustomerId(customerId)){
+//			System.out.println("Packaging already generated for this customer");
+//			return;
+//		}
+//
+//		StagingPackaging sp = new StagingPackaging();
+//		sp.setCustomerId(customerId);
+//		sp.setDistrictId(districtId);
+//		sp.setIsPacked(0);
+//		sp.setStatusId(1);
+//		sp.setCreatedBy("User");
+//		sp.setCreatedTime(LocalDateTime.now());
+//
+//		stagingPackagingRepo.save(sp);
+//	}
 }
 

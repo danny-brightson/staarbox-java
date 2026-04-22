@@ -27,7 +27,7 @@ public class cancellationService {
 
 	        for (LocalDate date : cancelledDates) {
 
-	            LocalDateTime cancelledDateTime = date.atStartOfDay();
+	            LocalDate cancelledDateTime = date;
 
 	            if (isCancelled) {
 
@@ -63,7 +63,7 @@ public class cancellationService {
 	        return isCancelled ? "Cancelled Successfully" : "Revoked Successfully";
 	    }
 	    
-	    public List<LocalDateTime> getCancelledDates(Long customerId) {
+	    public List<LocalDate> getCancelledDates(Long customerId) {
 	        return cancelledDateRepository.findActiveCancelledDates(customerId);
 	    }
 	}

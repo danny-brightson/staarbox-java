@@ -62,6 +62,9 @@ public class Packaging {
 
 	@Column(name = "ModefiedTime")
 	private LocalDate modefiedTime;
+	
+	@Column(name = "business_date")
+	private LocalDate businessDate;
 
 	
 	// getters and setters
@@ -175,9 +178,18 @@ public class Packaging {
 		this.customerName = customerName;
 	}
 
+
+	public LocalDate getBusinessDate() {
+		return businessDate;
+	}
+
+	public void setBusinessDate(LocalDate businessDate) {
+		this.businessDate = businessDate;
+	}
+
 	public Packaging(Long id, Long customerId, int districtId, String numberCode, byte[] qrCode, boolean isVerified,
 			Long statusId, Long boxNumber, String planCode, String customerName, String createdBy,
-			LocalDateTime createdTime, String modefiedBy, LocalDate modefiedTime) {
+			LocalDateTime createdTime, String modefiedBy, LocalDate modefiedTime, LocalDate businessDate) {
 		super();
 		this.id = id;
 		this.customerId = customerId;
@@ -193,6 +205,7 @@ public class Packaging {
 		this.createdTime = createdTime;
 		this.modefiedBy = modefiedBy;
 		this.modefiedTime = modefiedTime;
+		this.businessDate = businessDate;
 	}
 
 	public String getPlanCode() {

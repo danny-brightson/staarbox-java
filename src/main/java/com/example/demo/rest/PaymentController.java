@@ -97,28 +97,35 @@ public class PaymentController {
 			if (isValid) {
 				payment.setStatus("SUCCESS");
 				paymentDetailsrepo.save(payment);
+				
+				if (promoCode!=null) {
+					Optional<AvailablePromoCode> promo = availablePromoCodeRepo.findValidPromo(promoCode);
+					if (!promo.isEmpty()&&promo.get().getDiscountPercentage()==100) {
+						int updatedRows = availablePromoCodeRepo.markPromoAsUsed(promoCode);
+					}
+				}
 				Optional<Wallet> existingWallet = walletRepository.findByCustomerId(cusId.longValue());
 				BigDecimal walletBalance;
 
-				if (Boolean.TRUE.equals(isRenewed)) {
-					BigDecimal rate = customerDetailsRepo.findRateByCustomerId(cusId.longValue());
+//				if (Boolean.TRUE.equals(isRenewed)) {
+//					BigDecimal rate = customerDetailsRepo.findRateByCustomerId(cusId.longValue());
+//
+//					Wallet wallet = existingWallet.orElseThrow(() -> 
+//				    new RuntimeException("Wallet not found for customer: " + cusId)
+//				);
+//
+//					BigDecimal updatedAmount = wallet.getAmount().add(rate);
+//					wallet.setAmount(updatedAmount);
+//					wallet.setLastPaymentDate(LocalDateTime.now());
+//					// wallet.setLastpaidAmount(paidAmount);
+//
+//					walletRepository.save(wallet);
+//					walletBalance = updatedAmount;
+//					result.put("status", "Payment Verified");
+//
+//				}
 
-					Wallet wallet = existingWallet.orElseThrow(() -> 
-				    new RuntimeException("Wallet not found for customer: " + cusId)
-				);
-
-					BigDecimal updatedAmount = wallet.getAmount().add(rate);
-					wallet.setAmount(updatedAmount);
-					wallet.setLastPaymentDate(LocalDateTime.now());
-					// wallet.setLastpaidAmount(paidAmount);
-
-					walletRepository.save(wallet);
-					walletBalance = updatedAmount;
-					result.put("status", "Payment Verified");
-
-				}
-
-				else if (Boolean.TRUE.equals(isFromWallet)) {
+				if (Boolean.TRUE.equals(isFromWallet)) {
 					CustomerPackDistrictProjection res = customerDetailsRepo
 							.findPackAndDistrictByCustomerId(cusId.longValue());
 
@@ -134,16 +141,15 @@ public class PaymentController {
 						result.put("status", "Min amount not found");
 					}
 					// âœ… Wallet Update Logic
-					BigDecimal paidAmount = new BigDecimal(amount); // get real amount dynamically
+					BigDecimal paidAmount = BigDecimal.valueOf(amount);// get real amount dynamically
 
 					// Optional<Wallet> existingWallet =
 					// walletRepository.findByCustomerId(cusId.longValue());
 
 					if (existingWallet.isPresent()) {
 
-						Wallet wallet = existingWallet.orElseThrow(() -> 
-					    new RuntimeException("Wallet not found for customer: " + cusId)
-					);
+						Wallet wallet = existingWallet
+								.orElseThrow(() -> new RuntimeException("Wallet not found for customer: " + cusId));
 
 						BigDecimal updatedAmount = wallet.getAmount().add(paidAmount);
 						wallet.setAmount(updatedAmount);
@@ -153,12 +159,6 @@ public class PaymentController {
 						walletRepository.save(wallet);
 						walletBalance = updatedAmount;
 					} else {
-						Wallet newWallet = new Wallet();
-						newWallet.setCustomerId(cusId.longValue());
-						newWallet.setAmount(paidAmount);
-						newWallet.setLastPaymentDate(LocalDateTime.now());
-						newWallet.setLastpaidAmount(paidAmount);
-						walletRepository.save(newWallet);
 						walletBalance = paidAmount;
 					}
 
@@ -186,43 +186,65 @@ public class PaymentController {
 					int customized = 0;
 					customerDetailsRepo.updatePaymentStatus(true, nextRenewDate, cusId, orderId, customerStatus,
 							LocalDateTime.now(), customized);
-					
+
 					result.put("status", "Payment Verified");
 
 				}
 
-//				if (isRenewed == true || isFromWallet) {
-//					
-//				}
-
 				else {
+					BigDecimal walletAmountToAdd;
+
+					// RULE 2: NEW + RENEWAL → always use RATE
+					walletAmountToAdd = customerDetailsRepo.findRateByCustomerId(cusId.longValue());
+
+					// WALLET UPSERT
+					Wallet wallet = walletRepository.findByCustomerId(cusId.longValue()).orElseGet(() -> {
+						Wallet w = new Wallet();
+						w.setCustomerId(cusId.longValue());
+						w.setAmount(BigDecimal.ZERO);
+						return w;
+					});
+
+					// ✅ Update wallet
+					BigDecimal updatedAmount = wallet.getAmount().add(walletAmountToAdd);
+
+					wallet.setAmount(updatedAmount);
+					wallet.setLastPaymentDate(LocalDateTime.now());
+					wallet.setLastpaidAmount(walletAmountToAdd);
+
+					walletRepository.save(wallet);
+
 					// LocalDateTime nextRenewDate = LocalDateTime.now().plusDays(30);
 
 					// âœ… Calculate next renewal using 26 delivery days (excluding Sundays)
-					LocalDateTime today = LocalDateTime.now();
-					DayOfWeek day = today.getDayOfWeek();
-					LocalDateTime nextRenewalLocalDate;
-					LocalDateTime startDate;
-					if (day == DayOfWeek.FRIDAY) {
-						startDate = today.plusDays(3);
-						nextRenewalLocalDate = calculateNextRenewalDate(startDate);
-					} else {
-						startDate = today.plusDays(2);
-						nextRenewalLocalDate = calculateNextRenewalDate(startDate);
+
+					if (!Boolean.TRUE.equals(isRenewed)) {
+						LocalDateTime today = LocalDateTime.now();
+						DayOfWeek day = today.getDayOfWeek();
+						LocalDateTime nextRenewalLocalDate;
+						LocalDateTime startDate;
+						if (day == DayOfWeek.FRIDAY) {
+							startDate = today.plusDays(3);
+							nextRenewalLocalDate = calculateNextRenewalDate(startDate);
+						} else {
+							startDate = today.plusDays(2);
+							nextRenewalLocalDate = calculateNextRenewalDate(startDate);
+						}
+
+						// ✅ Save startDate in DB
+						customerDetailsRepo.updateStartDate(cusId.longValue(), startDate.toLocalDate());
+
+						// âœ… Convert to LocalDateTime (start of day)
+						LocalDateTime nextRenewDate = nextRenewalLocalDate;
+
+						int customerStatus = 5;
+						int customized = 0;
+						customerDetailsRepo.updatePaymentStatus(true, nextRenewDate, cusId, orderId, customerStatus,
+								LocalDateTime.now(), customized);
+
+						result.put("status", "Payment Verified");
+
 					}
-
-					// ✅ Save startDate in DB
-					customerDetailsRepo.updateStartDate(cusId.longValue(), startDate.toLocalDate());
-
-					// âœ… Convert to LocalDateTime (start of day)
-					LocalDateTime nextRenewDate = nextRenewalLocalDate;
-
-					int customerStatus = 5;
-					int customized = 0;
-					customerDetailsRepo.updatePaymentStatus(true, nextRenewDate, cusId, orderId, customerStatus,
-							LocalDateTime.now(), customized);
-
-					result.put("status", "Payment Verified");
 				}
 			} else {
 				payment.setStatus("FAILED");
