@@ -522,7 +522,7 @@ public class CustomaizationService {
 		// 			"Today's customization time is over. You can customize only between 9 AM to 7 PM.");
 		// } 
 		LocalTime startTime = LocalTime.of(9, 30);   // 9:30 AM
-		LocalTime endTime = LocalTime.of(23, 30);   // 7:30 PM
+		LocalTime endTime = LocalTime.of(19, 30);  // 7:30 PM
 
 		LocalTime current = LocalTime.now(ZoneId.of("Asia/Kolkata"));
 		

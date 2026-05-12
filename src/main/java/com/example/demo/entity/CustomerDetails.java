@@ -189,6 +189,17 @@ public class CustomerDetails {
 	
 	 
 
+	@Column(name = "weekday")
+	private Integer weekday;
+
+	public Integer getWeekday() {
+		return weekday;
+	}
+	public void setWeekday(Integer weekday) {
+		this.weekday = weekday;
+	}
+	 
+	
 	
 	public CustomerDetails() {
 		super();

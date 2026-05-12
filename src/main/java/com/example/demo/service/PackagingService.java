@@ -153,6 +153,14 @@ public class PackagingService {
 		}
 		System.out.println("Delivery Date: " + deliveryDate);
 
+		DayOfWeek dow = deliveryDate.getDayOfWeek();
+		int weekday;
+		if (dow.getValue() == 7) {
+			weekday = 1;
+		} else {
+			weekday = dow.getValue() + 1;
+		}
+
 		packagingRepo.deleteByDistrictId(districtId);
 
 		List<PackagingDto> customers = getSortedPackagesByDistrict(districtId);
@@ -195,6 +203,8 @@ public class PackagingService {
 				entity.setCreatedBy("User");
 				entity.setCreatedTime(LocalDateTime.now());
 				entity.setPlanCode(planCode);
+				entity.setWeekday(deliveryDate.getDayOfWeek().getValue());
+				entity.setWeekday(weekday); // ✅ correct weekday
 				entity = packagingRepo.save(entity);
 
 				String numberCode = entity.getBoxNumber()  + planCode +  "-"
@@ -232,9 +242,12 @@ public class PackagingService {
 		CustomerDetails customer = customerDetailsRepo.findById(data.getCustomerId())
 				.orElseThrow(() -> new RuntimeException("Customer not found"));
 		System.out.println(data.getCustomerId());
-		LocalDate businessDate = LocalDate.now();
-		DayOfWeek day = businessDate.getDayOfWeek();
-		int weekday= day.getValue();
+		// LocalDate businessDate = LocalDate.now();
+		// DayOfWeek day = businessDate.getDayOfWeek();
+
+		LocalDate businessDate = LocalDate.now(); 
+		int weekday = data.getWeekday(); 
+		// int weekday= day.getValue();
 	//    if (day.getValue() == 7) {
 	  //  	 weekday=1;
 	  //  }
@@ -646,21 +659,30 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
 				? BigDecimal.valueOf(customizedAmountValue) 
 				: BigDecimal.ZERO;
 
-		if (customizedAmount != null) {
+		// if (customizedAmount != null) {
 
+		// 	wallet.setAmount(walletAmount.subtract(customizedAmount));
+
+		// } else {
+
+		// 	Long packageId = customerDetailsRepo.getPackageId(customerId);
+		// 	int districtId = customerDetailsRepo.getDistrictId(customerId.intValue());
+		// 	Long rateValue = customerDetailsRepo.getPackageRate(packageId, (long) districtId);
+
+		// 	BigDecimal rate = BigDecimal.valueOf(rateValue);
+
+		// 	wallet.setAmount(walletAmount.subtract(rate));
+		// }
+		if (customizedAmount.compareTo(BigDecimal.ZERO) > 0) {
 			wallet.setAmount(walletAmount.subtract(customizedAmount));
-
 		} else {
-
 			Long packageId = customerDetailsRepo.getPackageId(customerId);
 			int districtId = customerDetailsRepo.getDistrictId(customerId.intValue());
 			Long rateValue = customerDetailsRepo.getPackageRate(packageId, (long) districtId);
 
 			BigDecimal rate = BigDecimal.valueOf(rateValue);
-
 			wallet.setAmount(walletAmount.subtract(rate));
 		}
-
 		walletRepository.save(wallet);
 	}
 
@@ -688,6 +710,18 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
 		if (deliveryDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
 			deliveryDate = deliveryDate.plusDays(1);
 		}
+		 System.out.println("Delivery Date : " + deliveryDate);
+
+		// ✅ Same mapping
+		DayOfWeek dow = deliveryDate.getDayOfWeek();
+		int weekday;
+		if (dow.getValue() == 7) {
+			weekday = 1;
+		} else {
+			weekday = dow.getValue() + 1;
+		}
+
+		
 
 		System.out.println("Delivery Date : " + deliveryDate);
 
@@ -708,20 +742,42 @@ public List<String> createImage(List<QrCodeProjection> qrDataList) {
 			return;
 		}
 
-		if(stagingPackagingRepo.existsByCustomerId(customerId)){
-			System.out.println("Packaging already generated for this customer");
+		// if(stagingPackagingRepo.existsByCustomerId(customerId)){
+		// 	System.out.println("Packaging already generated for this customer");
+		// 	return;
+		// }
+
+		if(stagingPackagingRepo.existsByCustomerIdAndCreatedTimeBetween(
+        customerId,
+        LocalDate.now().atStartOfDay(),
+        LocalDate.now().plusDays(1).atStartOfDay()
+		)) {
 			return;
 		}
 
 		StagingPackaging sp = new StagingPackaging();
 		sp.setCustomerId(customerId);
 		sp.setDistrictId(districtId);
+		// sp.setWeekday(LocalDate.now().getDayOfWeek().getValue());
 		sp.setIsPacked(0);
 		sp.setStatusId(1);
 		sp.setCreatedBy("User");
 		sp.setCreatedTime(LocalDateTime.now());
-
+		sp.setWeekday(weekday); // ✅ correct weekday
 		stagingPackagingRepo.save(sp);
+	}
+
+	public void generateBatchByWeekday(int weekdayId) {
+		// 1. Get all customer IDs for the weekday
+		List<Long> customerIds = customerDetailsRepo.findCustomerIdsByWeekday(weekdayId);
+
+		// 2. Loop and generate packaging
+		for (Long customerId : customerIds) {
+			Integer districtId = customerDetailsRepo.findDistrictIdByCustomerId(customerId);
+			if (districtId != null) {
+				generateCodesForPacking(customerId, districtId);
+			}
+		}
 	}
 }
 
