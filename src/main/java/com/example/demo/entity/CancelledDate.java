@@ -38,7 +38,7 @@ public class CancelledDate {
     private LocalDate modefiedTime;
 
     @Column(name = "CancelledDate", nullable = false)
-    private LocalDateTime cancelledDate;
+    private LocalDate cancelledDate;
 
     // 🔹 Default Constructor
     public CancelledDate() {
@@ -102,11 +102,11 @@ public class CancelledDate {
         this.modefiedTime = modefiedTime;
     }
 
-    public LocalDateTime getCancelledDate() {
+    public LocalDate getCancelledDate() {
         return cancelledDate;
     }
 
-    public void setCancelledDate(LocalDateTime cancelledDate) {
+    public void setCancelledDate(LocalDate cancelledDate) {
         this.cancelledDate = cancelledDate;
     }
 }

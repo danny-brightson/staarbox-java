@@ -40,7 +40,7 @@ public class cancelledDateRest {
 	}
 
 	   @GetMapping("/getCancelledDate")
-	    public ResponseEntity<List<LocalDateTime>> 
+	    public ResponseEntity<List<LocalDate>> 
 	        getCancelledDates(@RequestParam Long customerId) {
 
 	        return ResponseEntity.ok(

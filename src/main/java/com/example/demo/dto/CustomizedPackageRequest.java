@@ -11,14 +11,18 @@ public class CustomizedPackageRequest {
 	private Long customerId;
 	private List<OptionalIngredientDto> optional;
 	private IngredientDto sandwich;
+	private IngredientDto jar;
 
 	public CustomizedPackageRequest() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
+
+
 	public CustomizedPackageRequest(IngredientDto eggOrSeed, List<IngredientDto> fruits, List<IngredientDto> nuts,
-			boolean eggAdded, Long customerId, List<OptionalIngredientDto> optional, IngredientDto sandwich) {
+			boolean eggAdded, Long customerId, List<OptionalIngredientDto> optional, IngredientDto sandwich,
+			IngredientDto jar) {
 		super();
 		this.eggOrSeed = eggOrSeed;
 		this.fruits = fruits;
@@ -27,7 +31,10 @@ public class CustomizedPackageRequest {
 		this.customerId = customerId;
 		this.optional = optional;
 		this.sandwich = sandwich;
+		this.jar = jar;
 	}
+
+
 
 	public IngredientDto getEggOrSeed() {
 		return eggOrSeed;
@@ -84,5 +91,18 @@ public class CustomizedPackageRequest {
 	public void setSandwich(IngredientDto sandwich) {
 		this.sandwich = sandwich;
 	}
+
+
+
+	public IngredientDto getJar() {
+		return jar;
+	}
+
+
+
+	public void setJar(IngredientDto jar) {
+		this.jar = jar;
+	}
+	
 
 }

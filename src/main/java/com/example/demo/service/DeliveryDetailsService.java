@@ -59,7 +59,7 @@ public class DeliveryDetailsService {
 	            throw new IllegalArgumentException("Reason ID must be provided if not delivered.");
 	        }
 
-	        todaysDeliveryDetailsRepo.updateDeliveredStatus(id, isDelivered, finalReasonId,LocalDateTime.now(),"DeliveryPerson");
+	        todaysDeliveryDetailsRepo.updateDeliveredStatus(id, isDelivered, finalReasonId,LocalDateTime.now(),LocalDateTime.now(),"DeliveryPerson");
 	        customerDetailsRepo.updateCustomization(
 	        		data.get().getCustomerId(),
 					isCustomized,

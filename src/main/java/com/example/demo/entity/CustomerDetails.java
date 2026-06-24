@@ -94,7 +94,7 @@ public class CustomerDetails {
 	private Date nextrenewalDate;
 
 	@Column(name = "IsCustomized")
-	private Boolean isCustomized;
+	private boolean isCustomized;
 
 	@Column(name = "LastCustomizedDate")
 	private LocalDateTime lastCustomizedDate;
@@ -172,14 +172,19 @@ public class CustomerDetails {
 	private LocalDate cancelScheduledDate;
 
 	@Column(name = "isCancelled")
-	private Boolean isCancelled = false;
+	private boolean isCancelled = false;
 
 	
 	@Column(name = "cancelRequestedDate")
 	private LocalDate cancelRequestedDate;
 	
 	@Column(name = "IsDiabetic")
-	private Boolean isDiabetic;
+	private boolean isDiabetic;
+	
+	@Column(name = "StartDate")
+	private LocalDate startDate;
+	
+	 
 
 	
 	public CustomerDetails() {
@@ -188,18 +193,27 @@ public class CustomerDetails {
 	}
 
 
+
+
+
+
+
+
+
+
+
 	public CustomerDetails(Long id, String name, Date dateOfBirth, int age, String genderId, String addressLine1,
 			String addressLine2, String addressType, int districtId, int stateId, String pinCode, String phoneNumber,
 			String mailId, int delivaryTimingId, boolean isPragnent, boolean isAlergic, String alergicFruits,
 			boolean isEggPreferd, int packDetailsId, boolean isPaymentSuccess, LocalDateTime paymentDoneTime,
-			boolean isRenewed, Date renewedDate, Date nextrenewalDate, Boolean isCustomized,
+			boolean isRenewed, Date renewedDate, Date nextrenewalDate, boolean isCustomized,
 			LocalDateTime lastCustomizedDate, int customerStatusId, Long statusId, String createdBy,
 			LocalDateTime createdTime, String modefiedBy, LocalDate modefiedTime, String orderId, String deliveryCode,
 			int zoneId, int distanceId, Double latitude, Double longitude, String newAddressLine1,
 			String newAddressLine2, String newAddressType, Integer newDistrictId, Integer newStateId, String newPinCode,
 			Integer newDelivaryTimingId, boolean isAddressPending, LocalDate addressUpdateApplyDate, Double newLatitude,
-			Double newLongitude, LocalDate cancelScheduledDate, Boolean isCancelled, LocalDate cancelRequestedDate,
-			Boolean isDiabetic) {
+			Double newLongitude, LocalDate cancelScheduledDate, boolean isCancelled, LocalDate cancelRequestedDate,
+			boolean isDiabetic, LocalDate startDate) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -264,6 +278,11 @@ public class CustomerDetails {
 
 
 
+
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
 
 
 
@@ -460,11 +479,11 @@ public class CustomerDetails {
 		this.nextrenewalDate = nextrenewalDate;
 	}
 
-	public Boolean isCustomized() {
+	public boolean isCustomized() {
 		return isCustomized;
 	}
 
-	public void setCustomized(Boolean isCustomized) {
+	public void setCustomized(boolean isCustomized) {
 		this.isCustomized = isCustomized;
 	}
 
@@ -586,7 +605,7 @@ public class CustomerDetails {
 
 
 
-	public Boolean getIsCustomized() {
+	public boolean getIsCustomized() {
 		return isCustomized;
 	}
 
@@ -596,7 +615,7 @@ public class CustomerDetails {
 
 
 
-	public void setIsCustomized(Boolean isCustomized) {
+	public void setIsCustomized(boolean isCustomized) {
 		this.isCustomized = isCustomized;
 	}
 
@@ -849,14 +868,14 @@ public class CustomerDetails {
 
 
 
-	public Boolean getIsCancelled() {
+	public boolean getIsCancelled() {
 		return isCancelled;
 	}
 
 
 
 
-	public void setIsCancelled(Boolean isCancelled) {
+	public void setIsCancelled(boolean isCancelled) {
 		this.isCancelled = isCancelled;
 	}
 
@@ -879,12 +898,12 @@ public class CustomerDetails {
 	}
 
 
-	public Boolean getIsDiabetic() {
+	public boolean getIsDiabetic() {
 		return isDiabetic;
 	}
 
 
-	public void setIsDiabetic(Boolean isDiabetic) {
+	public void setIsDiabetic(boolean isDiabetic) {
 		this.isDiabetic = isDiabetic;
 	}
 	

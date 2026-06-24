@@ -88,10 +88,10 @@ public class PackageController {
 	     );
 	     return ResponseEntity.ok("Packed items updated.");
 	 }
-	 @PostMapping("/generatePackaging/{customerId}")
-	 	public String generatePackaging(@PathVariable Long customerId) {
-		return packagingService.generatePackaging(customerId);
-		}
+//	 @PostMapping("/generatePackaging/{customerId}")
+//	 	public String generatePackaging(@PathVariable Long customerId) {
+//		return packagingService.generatePackaging(customerId);
+//		}
 
 
 

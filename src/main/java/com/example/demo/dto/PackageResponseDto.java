@@ -13,6 +13,7 @@ public class PackageResponseDto {
     private List<IngredientDto> nuts;
     private List<OptionalIngredientDto> optionals;
     private IngredientDto sandwich ;
+    private IngredientDto Jar ;
 
     // Constructor
     public PackageResponseDto() {
@@ -67,6 +68,14 @@ public class PackageResponseDto {
 
 	public void setSandwich(IngredientDto sandwich) {
 		this.sandwich = sandwich;
+	}
+
+	public IngredientDto getJar() {
+		return Jar;
+	}
+
+	public void setJar(IngredientDto jar) {
+		Jar = jar;
 	}
 
 	

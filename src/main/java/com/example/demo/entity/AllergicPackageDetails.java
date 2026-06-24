@@ -1,9 +1,15 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Where;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @SuppressWarnings("deprecation")
 @Entity
@@ -128,11 +134,20 @@ public class AllergicPackageDetails {
 	private Integer fruit6Id;
 	@Column(name = "Fruit6Weight")
 	private String fruit6Weight;
+	
+	
+	@Column(name = "JarId")
+	private Integer jarId;
+
+	@Column(name = "JarQuantity")
+	private String jarQuantity;
 
 	public AllergicPackageDetails() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+
+	
 
 	public AllergicPackageDetails(Integer id, Integer customerId, Byte weekdaysId, Boolean isEggAdded, String eggOrSeed,
 			Integer fruit1Id, String fruit1Weight, Integer fruit2Id, String fruit2Weight, Integer fruit3Id,
@@ -141,7 +156,8 @@ public class AllergicPackageDetails {
 			Integer nut4Id, String nut4Weight, Integer nut5Id, String nut5Weight, Integer optional1Id,
 			String optional1Weight, Integer optional2Id, String optional2Weight, Integer optional3Id,
 			String optional3Weight, Integer statusId, String createdBy, LocalDateTime createdTime, String modifiedBy,
-			LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight) {
+			LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight, Integer jarId,
+			String jarQuantity) {
 		super();
 		this.id = id;
 		this.customerId = customerId;
@@ -182,7 +198,11 @@ public class AllergicPackageDetails {
 		this.sandwichId = sandwichId;
 		this.fruit6Id = fruit6Id;
 		this.fruit6Weight = fruit6Weight;
+		this.jarId = jarId;
+		this.jarQuantity = jarQuantity;
 	}
+
+
 
 	public Integer getId() {
 		return id;
@@ -495,6 +515,32 @@ public class AllergicPackageDetails {
 	public void setFruit6Weight(String fruit6Weight) {
 		this.fruit6Weight = fruit6Weight;
 	}
+
+
+
+	public Integer getJarId() {
+		return jarId;
+	}
+
+
+
+	public void setJarId(Integer jarId) {
+		this.jarId = jarId;
+	}
+
+
+
+	public String getJarQuantity() {
+		return jarQuantity;
+	}
+
+
+
+	public void setJarQuantity(String jarQuantity) {
+		this.jarQuantity = jarQuantity;
+	}
+	
+	
 
 	// Getters and Setters...
 }

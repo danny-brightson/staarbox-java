@@ -14,58 +14,79 @@ import com.example.demo.repo.cancelledDateRepo;
 @Service
 public class cancellationService {
 
-	
-	
-	
+    @Autowired
+    private cancelledDateRepo cancelledDateRepository;
 
-	    @Autowired
-	    private cancelledDateRepo cancelledDateRepository;
+    public String handleCancellation(Long custId,
+                                     List<LocalDate> cancelledDates,
+                                     Boolean isCancelled) {
 
-	    public String handleCancellation(Long custId,
-	                                     List<LocalDate> cancelledDates,
-	                                     Boolean isCancelled) {
+        for (LocalDate date : cancelledDates) {
 
-	        for (LocalDate date : cancelledDates) {
+            LocalDate cancelledDateValue = date;
 
-	            LocalDateTime cancelledDateTime = date.atStartOfDay();
+            // 🔹 Check if record already exists for this customer + date
+            Optional<CancelledDate> existing =
+                    cancelledDateRepository
+                            .findByCustomerIdAndCancelledDate(custId, cancelledDateValue);
 
-	            if (isCancelled) {
+            if (Boolean.TRUE.equals(isCancelled)) {
 
-	                // 🔹 Insert new cancellation
-	                CancelledDate cancel = new CancelledDate();
-	                cancel.setCustomerId(custId);
-	                cancel.setCancelledDate(cancelledDateTime);
-	                cancel.setStatusId(1L); // Cancelled
-	                cancel.setCreatedBy("User");
-	                cancel.setCreatedTime(LocalDateTime.now());
+                // ======================================================
+                // CANCEL REQUEST
+                // ======================================================
 
-	                cancelledDateRepository.save(cancel);
+                // ✅ Already cancelled → skip duplicate insert
+                if (existing.isPresent() && existing.get().getStatusId() == 1L) {
+                    continue;
+                }
 
-	            } else {
+                // ✅ If revoked before, reactivate same row
+                if (existing.isPresent()) {
+                    CancelledDate cancel = existing.get();
+                    cancel.setStatusId(1L);
+                    cancel.setModefiedBy("User");
+                    cancel.setModefiedTime(LocalDate.now());
 
-	                // 🔹 Revoke cancellation
-	                Optional<CancelledDate> existing =
-	                        cancelledDateRepository
-	                                .findByCustomerIdAndCancelledDate(custId, cancelledDateTime);
+                    cancelledDateRepository.save(cancel);
+                }
 
-	                if (existing.isPresent()) {
-	                    CancelledDate cancel = existing.get();
-	                    cancel.setStatusId(2L); // Revoked
-	                    cancel.setModefiedBy("User");
-	                    cancel.setModefiedTime(LocalDate.now());
+                // ✅ Fresh insert
+                else {
+                    CancelledDate cancel = new CancelledDate();
+                    cancel.setCustomerId(custId);
+                    cancel.setCancelledDate(cancelledDateValue);
+                    cancel.setStatusId(1L); // Cancelled
+                    cancel.setCreatedBy("User");
+                    cancel.setCreatedTime(LocalDateTime.now());
 
-	                    cancelledDateRepository.save(cancel);
-	                }
+                    cancelledDateRepository.save(cancel);
+                }
 
-	            }
-	        }
+            } else {
 
-	        return isCancelled ? "Cancelled Successfully" : "Revoked Successfully";
-	    }
-	    
-	    public List<LocalDateTime> getCancelledDates(Long customerId) {
-	        return cancelledDateRepository.findActiveCancelledDates(customerId);
-	    }
-	}
+                // ======================================================
+                // REVOKE REQUEST
+                // ======================================================
 
+                if (existing.isPresent() && existing.get().getStatusId() == 1L) {
 
+                    CancelledDate cancel = existing.get();
+                    cancel.setStatusId(2L); // Revoked
+                    cancel.setModefiedBy("User");
+                    cancel.setModefiedTime(LocalDate.now());
+
+                    cancelledDateRepository.save(cancel);
+                }
+            }
+        }
+
+        return Boolean.TRUE.equals(isCancelled)
+                ? "Cancelled Successfully"
+                : "Revoked Successfully";
+    }
+
+    public List<LocalDate> getCancelledDates(Long customerId) {
+        return cancelledDateRepository.findActiveCancelledDates(customerId);
+    }
+}

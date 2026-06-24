@@ -17,37 +17,96 @@ import com.example.demo.entity.TodaysDeliveryDetails;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface TodaysDeliveryDetailsRepo extends JpaRepository<TodaysDeliveryDetails, Long>{
+public interface TodaysDeliveryDetailsRepo extends JpaRepository<TodaysDeliveryDetails, Long> {
 
-	@Query(value = "SELECT * FROM todaysdeliverydetails  WHERE StatusId = 1 and DistrictId=:districtId and BoxNumber=:boxnumber", nativeQuery = true)
-	Optional<TodaysDeliveryDetails> findByDistrictIdAndBoxnumber(int districtId, long boxnumber);
-
-	
-	@Transactional
-	@Modifying
-	@Query(value = "UPDATE todaysdeliverydetails SET DeliveryboyPhoneNumber = :phoneNumber WHERE Id=:id AND StatusId = 1;", nativeQuery = true)
-	int updateDeliveryBoyDetils(Long id, String phoneNumber);
-
-	@Query(value = "SELECT * FROM todaysdeliverydetails  WHERE StatusId = 1 and DeliveryboyPhoneNumber=:phoneNumber", nativeQuery = true)
-	List<TodaysDeliveryDetails> findByPhoneNumber(String phoneNumber);
-	
-	
-
-
-
-	
-	@Transactional
-	@Modifying
-	@Query(value = "UPDATE todaysdeliverydetails SET IsDelivered = :isDelivered, ReasonForNotDelivered = :reasonId, ModefiedTime = :modifiedTime, ModefiedBy = :modifiedBy WHERE Id = :id", nativeQuery = true)
-	int updateDeliveredStatus(@Param("id") Long id, 
-	                          @Param("isDelivered") Boolean isDelivered, 
-	                          @Param("reasonId") Integer reasonId,
-	                          @Param("modifiedTime") LocalDateTime modifiedTime,
-	                          @Param("modifiedBy") String modifiedBy);
+    // =========================================================
+    // GET BY DISTRICT + BOXNUMBER + BUSINESS DATE
+    // =========================================================
+    @Query(value = """
+            SELECT * 
+            FROM todaysdeliverydetails  
+            WHERE StatusId = 1 
+              AND DistrictId = :districtId 
+              AND BoxNumber = :boxnumber
+              AND BusinessDate = CURDATE()
+            """, nativeQuery = true)
+    Optional<TodaysDeliveryDetails> findByDistrictIdAndBoxnumber(
+            @Param("districtId") int districtId,
+            @Param("boxnumber") long boxnumber
+    );
 
 
+    // =========================================================
+    // UPDATE DELIVERY BOY DETAILS WITH BUSINESS DATE
+    // =========================================================
+    @Transactional
+    @Modifying
+    @Query(value = """
+            UPDATE todaysdeliverydetails 
+            SET DeliveryboyPhoneNumber = :phoneNumber 
+            WHERE Id = :id 
+              AND StatusId = 1
+              AND BusinessDate = CURDATE()
+            """, nativeQuery = true)
+    int updateDeliveryBoyDetils(
+            @Param("id") Long id,
+            @Param("phoneNumber") String phoneNumber
+    );
 
-	Optional<TodaysDeliveryDetails> findByDeliveryboyPhoneNumberAndBoxNumber(String phoneNumber, long boxnumber);
 
+    // =========================================================
+    // GET ALL BY PHONE NUMBER + BUSINESS DATE
+    // =========================================================
+    @Query(value = """
+            SELECT * 
+            FROM todaysdeliverydetails  
+            WHERE StatusId = 1 
+              AND DeliveryboyPhoneNumber = :phoneNumber
+              AND BusinessDate = CURDATE()
+            """, nativeQuery = true)
+    List<TodaysDeliveryDetails> findByPhoneNumber(
+            @Param("phoneNumber") String phoneNumber
+    );
+
+
+    // =========================================================
+    // UPDATE DELIVERY STATUS + DELIVERY TIME
+    // =========================================================
+    @Transactional
+    @Modifying
+    @Query(value = """
+            UPDATE todaysdeliverydetails 
+            SET IsDelivered = :isDelivered,
+                ReasonForNotDelivered = :reasonId,
+                DeliveredTime = :deliveredTime,
+                ModefiedTime = :modifiedTime,
+                ModefiedBy = :modifiedBy
+            WHERE Id = :id
+              AND BusinessDate = CURDATE()
+            """, nativeQuery = true)
+    int updateDeliveredStatus(
+            @Param("id") Long id,
+            @Param("isDelivered") Boolean isDelivered,
+            @Param("reasonId") Integer reasonId,
+            @Param("deliveredTime") LocalDateTime deliveredTime,
+            @Param("modifiedTime") LocalDateTime modifiedTime,
+            @Param("modifiedBy") String modifiedBy
+    );
+
+
+    // =========================================================
+    // FIND BY DELIVERY BOY + BOXNUMBER + BUSINESS DATE
+    // =========================================================
+    @Query(value = """
+            SELECT * 
+            FROM todaysdeliverydetails
+            WHERE DeliveryboyPhoneNumber = :phoneNumber
+              AND BoxNumber = :boxnumber
+              AND BusinessDate = CURDATE()
+            """, nativeQuery = true)
+    Optional<TodaysDeliveryDetails> findByDeliveryboyPhoneNumberAndBoxNumber(
+            @Param("phoneNumber") String phoneNumber,
+            @Param("boxnumber") long boxnumber
+    );
 
 }

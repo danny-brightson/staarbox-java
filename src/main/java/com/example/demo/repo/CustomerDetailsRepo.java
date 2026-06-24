@@ -1,6 +1,7 @@
 package com.example.demo.repo;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.CustomerDetails;
 import com.example.demo.projection.CustomerPackDistrictProjection;
+import com.example.demo.projection.RenewalSchedulerProjection;
 
 @Repository
 public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long> {
@@ -120,31 +122,32 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 //	        List<Object[]> findAllOrderByZoneDistanceAsc();
 
 	        @Query(value = """
-		            SELECT 
-		                c.Id,
-		                c.ZoneId,
-		                c.DistanceId,
-		                c.DistrictId,
-		                c.DeliveryCode,
-		                c.PackDetailsId,
-		                c.DelivaryTimingId,
-		                c.Name,
-		                c.IsPragnent
-		            FROM 
-		                customerdetails c
-		            WHERE 
-		                c.NextRenewalDate >= CURRENT_DATE
-		                AND c.IsPaymentSuccess = TRUE
-		                AND c.StatusId = 1
-		                And c.DistrictId = :districtId
-		            ORDER BY 
-		                c.DistanceId ASC,
-		                CASE 
-		                    WHEN c.DelivaryTimingId IN (1, 2, 3) THEN 1
-		                    WHEN c.DelivaryTimingId = 4 THEN 2
-		                    ELSE 3
-		                END,
-		                c.DelivaryTimingId ASC
+		            SELECT  
+    c.Id,
+    c.ZoneId,
+    c.DistanceId,
+    c.DistrictId,
+    c.DeliveryCode,
+    c.PackDetailsId,
+    c.DelivaryTimingId,
+    c.Name,
+    c.IsPragnent
+FROM 
+    customerdetails c
+WHERE 
+    c.NextRenewalDate >= CURRENT_DATE
+    AND c.StartDate <= CURRENT_DATE
+    AND c.IsPaymentSuccess = TRUE
+    AND c.StatusId = 1
+    AND c.DistrictId = :districtId
+ORDER BY 
+    c.DistanceId ASC,
+    CASE 
+        WHEN c.DelivaryTimingId IN (1, 2, 3) THEN 1
+        WHEN c.DelivaryTimingId = 4 THEN 2
+        ELSE 3
+    END,
+    c.DelivaryTimingId ASC
 		            """, nativeQuery = true)
 		List<Object[]> findAllByDistrictIdOrdered(int districtId);
 		
@@ -160,7 +163,7 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 
 
 		
-		@Query(value = "SELECT paymentDoneTime  FROM customerdetails WHERE IsRenewed = 0 AND id =:customerId AND IsPaymentSuccess = 1 and StatusId=1;", nativeQuery = true)
+		@Query(value = "SELECT paymentDoneTime  FROM customerdetails WHERE id =:customerId AND IsPaymentSuccess = 1 and StatusId=1;", nativeQuery = true)
 		LocalDateTime  checkCustomaizationEnable(int customerId);
 
 		
@@ -309,6 +312,42 @@ public interface CustomerDetailsRepo extends JpaRepository<CustomerDetails, Long
 	@Query("UPDATE CustomerDetails c SET c.packDetailsId = :packId WHERE c.id = :customerId")
 	void updatePackDirect(@Param("customerId") Long customerId,
 						@Param("packId") Long packId);
+	@Transactional
+	@Query("UPDATE CustomerDetails c SET c.startDate = :startDate WHERE c.id = :customerId")
+	void updateStartDate(@Param("customerId") Long customerId,
+	                     @Param("startDate") LocalDate startDate);
+	
+	@Modifying
+	@Transactional
+	@Query("UPDATE CustomerDetails c SET c.nextrenewalDate = :renewaldate WHERE c.id = :customerId")
+	void updateRenewalDate(@Param("customerId") Long customerId,
+	                     @Param("renewaldate") Date renewaldate);
+	
+	@Query(value = """
+		    SELECT
+		        c.Id AS customerId,
+		        w.Amount AS walletAmount,
+		        p.MinAmount AS minAmount,
+		        p.MaxAmount AS maxAmount,
+		        (
+		            SELECT COUNT(*)
+		            FROM cancelleddate cd
+		            WHERE cd.CustomerId = c.Id
+		            AND DATE(cd.CancelledDate) = CURDATE()
+		        ) AS cancelledCount
+		    FROM customerdetails c
+		    INNER JOIN wallet w
+		        ON w.CustomerId = c.Id
+		    INNER JOIN priceperpackdetails p
+		        ON p.LkpPackDetailsId = c.PackDetailsId
+		       AND p.DistrictId = c.DistrictId
+		    WHERE c.StatusId = 1
+		      AND c.IsPaymentSuccess = 1
+		      AND c.NextRenewalDate >= CURDATE()
+		    """, nativeQuery = true)
+		List<RenewalSchedulerProjection> findCustomersForRenewalScheduler();
+
+
 
 
 }

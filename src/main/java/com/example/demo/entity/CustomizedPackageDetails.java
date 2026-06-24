@@ -160,6 +160,12 @@ public class CustomizedPackageDetails {
 	    @Column(name = "Fruit6Weight")
 	    private String fruit6Weight;
 	    
+	    @Column(name = "JarId")
+	    private Integer jarId;
+
+	    @Column(name = "JarQuantity")
+	    private String jarQuantity;
+	    
 	    // Getters, setters, and constructors as needed
 
 
@@ -168,6 +174,8 @@ public class CustomizedPackageDetails {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+
+
 
 
 	public CustomizedPackageDetails(Long id, Long customerId, LocalDateTime customizedDate, Integer weekdaysId,
@@ -181,7 +189,8 @@ public class CustomizedPackageDetails {
 				String optional4Weight, Boolean optional4IsFruit, Integer optional5Id, String optional5Weight,
 				Boolean optional5IsFruit, Integer optional6Id, String optional6Weight, Boolean optional6IsFruit,
 				Integer statusId, String createdBy, LocalDateTime createdTime, String modifiedBy,
-				LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight) {
+				LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight, Integer jarId,
+				String jarQuantity) {
 			super();
 			this.id = id;
 			this.customerId = customerId;
@@ -236,7 +245,11 @@ public class CustomizedPackageDetails {
 			this.sandwichId = sandwichId;
 			this.fruit6Id = fruit6Id;
 			this.fruit6Weight = fruit6Weight;
+			this.jarId = jarId;
+			this.jarQuantity = jarQuantity;
 		}
+
+
 
 
 	public Long getId() {
@@ -728,6 +741,36 @@ public class CustomizedPackageDetails {
 	public void setFruit6Weight(String fruit6Weight) {
 		this.fruit6Weight = fruit6Weight;
 	}
+
+
+
+
+	public Integer getJarId() {
+		return jarId;
+	}
+
+
+
+
+	public void setJarId(Integer jarId) {
+		this.jarId = jarId;
+	}
+
+
+
+
+	public String getJarQuantity() {
+		return jarQuantity;
+	}
+
+
+
+
+	public void setJarQuantity(String jarQuantity) {
+		this.jarQuantity = jarQuantity;
+	}
+	
+	
     
     // Getters and Setters...
 	

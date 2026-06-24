@@ -131,6 +131,12 @@ public class CommonAndPragnentPackDetails {
     private Integer fruit6Id;
     @Column(name = "Fruit6Weight")
     private String fruit6Weight;
+    
+    @Column(name = "JarId")
+    private Integer jarId;
+
+    @Column(name = "JarQuantity")
+    private String jarQuantity;
     public CommonAndPragnentPackDetails() {}
 
     // Full constructor (optional)
@@ -141,6 +147,8 @@ public class CommonAndPragnentPackDetails {
 	}
 
 
+
+
 	public CommonAndPragnentPackDetails(Integer id, Integer packageTypeId, Byte weekdayId, Boolean isEggAdded,
 			String eggOrSeed, String eggOrSeedWeight, Integer fruit1Id, String fruit1Weight, Integer fruit2Id,
 			String fruit2Weight, Integer fruit3Id, String fruit3Weight, Integer fruit4Id, String fruit4Weight,
@@ -148,7 +156,8 @@ public class CommonAndPragnentPackDetails {
 			Integer nut3Id, String nut3Weight, Integer nut4Id, String nut4Weight, Integer nut5Id, String nut5Weight,
 			Integer optional1Id, String optional1Weight, Integer optional2Id, String optional2Weight,
 			Integer optional3Id, String optional3Weight, Integer statusId, String createdBy, LocalDateTime createdTime,
-			String modifiedBy, LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight) {
+			String modifiedBy, LocalDateTime modifiedTime, Integer sandwichId, Integer fruit6Id, String fruit6Weight,
+			Integer jarId, String jarQuantity) {
 		super();
 		this.id = id;
 		this.packageTypeId = packageTypeId;
@@ -190,6 +199,8 @@ public class CommonAndPragnentPackDetails {
 		this.sandwichId = sandwichId;
 		this.fruit6Id = fruit6Id;
 		this.fruit6Weight = fruit6Weight;
+		this.jarId = jarId;
+		this.jarQuantity = jarQuantity;
 	}
 
 	public void setId(Integer id) {
@@ -506,6 +517,22 @@ public class CommonAndPragnentPackDetails {
 
 	public void setFruit6Weight(String fruit6Weight) {
 		this.fruit6Weight = fruit6Weight;
+	}
+
+	public Integer getJarId() {
+		return jarId;
+	}
+
+	public void setJarId(Integer jarId) {
+		this.jarId = jarId;
+	}
+
+	public String getJarQuantity() {
+		return jarQuantity;
+	}
+
+	public void setJarQuantity(String jarQuantity) {
+		this.jarQuantity = jarQuantity;
 	}
 	
 	

@@ -12,6 +12,8 @@ import com.example.demo.entity.CommonAndPragnentPackDetails;
 @Repository
 public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAndPragnentPackDetails, Long> {
 
+	  List<CommonAndPragnentPackDetails> findByWeekdayId(int weekdayId);
+	
 	@Query(value = """
 								   SELECT
     -- =========================
@@ -224,7 +226,21 @@ public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAn
     s.Fiber AS sandwichFiber,
     s.Fat AS sandwichFat,
     s.CarboHydreate AS sandwichCarbs,
-    s.Sugar AS sandwichSugar
+    s.Sugar AS sandwichSugar,
+    
+
+     -- =========================
+ -- Jar
+ -- =========================
+ j.Id AS jarId,
+ j.FruitAndNuts AS jarName,
+ j.Category AS jarCategory,
+ p.JarQuantity AS jarQuantity,
+ j.Protein AS jarProtein,
+ j.Fiber AS jarFiber,
+ j.Fat AS jarFat,
+ j.CarboHydreate AS jarCarbs,
+ j.Sugar AS jarSugar
 
 			FROM commonandPragnentpackDetails p
 			LEFT JOIN lkpfruitandnuts E1 ON E1.Id = p.EggOrSeed
@@ -246,6 +262,7 @@ public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAn
 			LEFT JOIN lkpfruitandnuts o5 ON o5.Id = p.Optional5Id
 			LEFT JOIN lkpfruitandnuts o6 ON o6.Id = p.Optional6Id
 			LEFT JOIN lkpfruitandnuts s  ON s.Id  = p.SandwichId
+			LEFT JOIN lkpfruitandnuts j ON j.Id = p.JarId
 
 			WHERE p.PackageTypeId = :packageTypeId
 			  AND p.WeekdayId = :weekdayId
@@ -253,77 +270,209 @@ public interface CommonandPragnentpackDetailsRepo extends JpaRepository<CommonAn
 	List<Object[]> getPackageItemView(@Param("packageTypeId") int packageTypeId, @Param("weekdayId") int weekdayId);
 
 	@Query(value = """
-				    SELECT
-				        p.IsEggAdded AS isEggAdded,
-				        E1.FruitAndNuts AS eggOrSeed,
-				        p.EggOrSeedWeight AS eggOrSeedWeight,
-				        IF(pis_egg.Packed IS TRUE, TRUE, FALSE) AS eggPacked,
-				        f1.FruitAndNuts AS fruit1Name, p.Fruit1Weight,
-				        IF(pis_f1.Packed IS TRUE, TRUE, FALSE) AS fruit1Packed,
-				        f2.FruitAndNuts AS fruit2Name, p.Fruit2Weight,
-				        IF(pis_f2.Packed IS TRUE, TRUE, FALSE) AS fruit2Packed,
-				        f3.FruitAndNuts AS fruit3Name, p.Fruit3Weight,
-				        IF(pis_f3.Packed IS TRUE, TRUE, FALSE) AS fruit3Packed,
-				        f4.FruitAndNuts AS fruit4Name, p.Fruit4Weight,
-				        IF(pis_f4.Packed IS TRUE, TRUE, FALSE) AS fruit4Packed,
-				        f5.FruitAndNuts AS fruit5Name, p.Fruit5Weight,
-				        IF(pis_f5.Packed IS TRUE, TRUE, FALSE) AS fruit5Packed,
-				        f6.FruitAndNuts AS fruit6Name, p.Fruit6Weight,
-				        IF(pis_f6.Packed IS TRUE, TRUE, FALSE) AS fruit6Packed,
-				        n1.FruitAndNuts AS nut1Name, p.Nut1Weight,
-				        IF(pis_n1.Packed IS TRUE, TRUE, FALSE) AS nut1Packed,
-				        n2.FruitAndNuts AS nut2Name, p.Nut2Weight,
-				        IF(pis_n2.Packed IS TRUE, TRUE, FALSE) AS nut2Packed,
-				        n3.FruitAndNuts AS nut3Name, p.Nut3Weight,
-				        IF(pis_n3.Packed IS TRUE, TRUE, FALSE) AS nut3Packed,
-				        n4.FruitAndNuts AS nut4Name, p.Nut4Weight,
-				        IF(pis_n4.Packed IS TRUE, TRUE, FALSE) AS nut4Packed,
-				        n5.FruitAndNuts AS nut5Name, p.Nut5Weight,
-				        IF(pis_n5.Packed IS TRUE, TRUE, FALSE) AS nut5Packed,
-			-- Sandwich 
-					        s.FruitAndNuts AS sandwichName,
-					        IF(pis_s.Packed IS TRUE, TRUE, FALSE) AS sandwichPacked
+		   SELECT
+    p.IsEggAdded AS isEggAdded,
 
-				    FROM commonandPragnentpackDetails p
+    -- =========================
+    -- Egg / Seed
+    -- =========================
+    E1.FruitAndNuts AS eggOrSeed,
+    p.EggOrSeedWeight AS eggOrSeedWeight,
 
-				    LEFT JOIN lkpfruitandnuts E1 ON E1.Id = p.eggOrSeed
-				    LEFT JOIN lkpfruitandnuts f1 ON f1.Id = p.Fruit1Id
-				    LEFT JOIN lkpfruitandnuts f2 ON f2.Id = p.Fruit2Id
-				    LEFT JOIN lkpfruitandnuts f3 ON f3.Id = p.Fruit3Id
-				    LEFT JOIN lkpfruitandnuts f4 ON f4.Id = p.Fruit4Id
-				    LEFT JOIN lkpfruitandnuts f5 ON f5.Id = p.Fruit5Id
-				    LEFT JOIN lkpfruitandnuts f6 ON f6.Id = p.Fruit6Id
-				    LEFT JOIN lkpfruitandnuts n1 ON n1.Id = p.Nut1Id
-				    LEFT JOIN lkpfruitandnuts n2 ON n2.Id = p.Nut2Id
-				    LEFT JOIN lkpfruitandnuts n3 ON n3.Id = p.Nut3Id
-				    LEFT JOIN lkpfruitandnuts n4 ON n4.Id = p.Nut4Id
-				    LEFT JOIN lkpfruitandnuts n5 ON n5.Id = p.Nut5Id
-			--  Sandwich join 
-					    LEFT JOIN lkpfruitandnuts s ON s.Id = p.SandwichId
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.eggOrSeed
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS eggPacked,
 
+    -- =========================
+    -- Fruits
+    -- =========================
+    f1.FruitAndNuts AS fruit1Name,
+    p.Fruit1Weight,
 
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit1Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit1Packed,
 
-				    LEFT JOIN packeritemstatus pis_egg ON pis_egg.CustomerId = :customerId AND pis_egg.ProductId = p.eggOrSeed
-				    LEFT JOIN packeritemstatus pis_f1 ON pis_f1.CustomerId = :customerId AND pis_f1.ProductId = p.Fruit1Id
-				    LEFT JOIN packeritemstatus pis_f2 ON pis_f2.CustomerId = :customerId AND pis_f2.ProductId = p.Fruit2Id
-				    LEFT JOIN packeritemstatus pis_f3 ON pis_f3.CustomerId = :customerId AND pis_f3.ProductId = p.Fruit3Id
-				    LEFT JOIN packeritemstatus pis_f4 ON pis_f4.CustomerId = :customerId AND pis_f4.ProductId = p.Fruit4Id
-				    LEFT JOIN packeritemstatus pis_f5 ON pis_f5.CustomerId = :customerId AND pis_f5.ProductId = p.Fruit5Id
-				    LEFT JOIN packeritemstatus pis_f6 ON pis_f6.CustomerId = :customerId AND pis_f6.ProductId = p.Fruit6Id
-				    LEFT JOIN packeritemstatus pis_n1 ON pis_n1.CustomerId = :customerId AND pis_n1.ProductId = p.Nut1Id
-				    LEFT JOIN packeritemstatus pis_n2 ON pis_n2.CustomerId = :customerId AND pis_n2.ProductId = p.Nut2Id
-				    LEFT JOIN packeritemstatus pis_n3 ON pis_n3.CustomerId = :customerId AND pis_n3.ProductId = p.Nut3Id
-				    LEFT JOIN packeritemstatus pis_n4 ON pis_n4.CustomerId = :customerId AND pis_n4.ProductId = p.Nut4Id
-				    LEFT JOIN packeritemstatus pis_n5 ON pis_n5.CustomerId = :customerId AND pis_n5.ProductId = p.Nut5Id
+    f2.FruitAndNuts AS fruit2Name,
+    p.Fruit2Weight,
 
-			--  Sandwich packed status 
-					    LEFT JOIN packeritemstatus pis_s ON pis_s.CustomerId = :customerId AND pis_s.ProductId = p.SandwichId
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit2Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit2Packed,
 
+    f3.FruitAndNuts AS fruit3Name,
+    p.Fruit3Weight,
 
-				    WHERE p.PackageTypeId = :packageTypeId
-				      AND p.WeekdayId = :weekdayId
-				""", nativeQuery = true)
-	List<Object[]> getPackStatusForCustomer(@Param("customerId") Long customerId,
-			@Param("packageTypeId") Integer packageTypeId, @Param("weekdayId") Integer weekdayId);
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit3Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit3Packed,
 
+    f4.FruitAndNuts AS fruit4Name,
+    p.Fruit4Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit4Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit4Packed,
+
+    f5.FruitAndNuts AS fruit5Name,
+    p.Fruit5Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit5Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit5Packed,
+
+    f6.FruitAndNuts AS fruit6Name,
+    p.Fruit6Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Fruit6Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS fruit6Packed,
+
+    -- =========================
+    -- Nuts
+    -- =========================
+    n1.FruitAndNuts AS nut1Name,
+    p.Nut1Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Nut1Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS nut1Packed,
+
+    n2.FruitAndNuts AS nut2Name,
+    p.Nut2Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Nut2Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS nut2Packed,
+
+    n3.FruitAndNuts AS nut3Name,
+    p.Nut3Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Nut3Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS nut3Packed,
+
+    n4.FruitAndNuts AS nut4Name,
+    p.Nut4Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Nut4Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS nut4Packed,
+
+    n5.FruitAndNuts AS nut5Name,
+    p.Nut5Weight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.Nut5Id
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS nut5Packed,
+
+    -- =========================
+    -- Sandwich
+    -- =========================
+    s.FruitAndNuts AS sandwichName,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.SandwichId
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS sandwichPacked,
+
+    -- =========================
+    -- Jar
+    -- =========================
+    j.FruitAndNuts AS jarName,
+    p.JarWeight,
+
+    IF(EXISTS (
+        SELECT 1
+        FROM packeritemstatus
+        WHERE CustomerId = :customerId
+          AND ProductId = p.JarId
+          AND Packed = TRUE
+    ), TRUE, FALSE) AS jarPacked
+
+FROM commonandPragnentpackDetails p
+
+LEFT JOIN lkpfruitandnuts E1 ON E1.Id = p.eggOrSeed
+
+-- Fruits
+LEFT JOIN lkpfruitandnuts f1 ON f1.Id = p.Fruit1Id
+LEFT JOIN lkpfruitandnuts f2 ON f2.Id = p.Fruit2Id
+LEFT JOIN lkpfruitandnuts f3 ON f3.Id = p.Fruit3Id
+LEFT JOIN lkpfruitandnuts f4 ON f4.Id = p.Fruit4Id
+LEFT JOIN lkpfruitandnuts f5 ON f5.Id = p.Fruit5Id
+LEFT JOIN lkpfruitandnuts f6 ON f6.Id = p.Fruit6Id
+
+-- Nuts
+LEFT JOIN lkpfruitandnuts n1 ON n1.Id = p.Nut1Id
+LEFT JOIN lkpfruitandnuts n2 ON n2.Id = p.Nut2Id
+LEFT JOIN lkpfruitandnuts n3 ON n3.Id = p.Nut3Id
+LEFT JOIN lkpfruitandnuts n4 ON n4.Id = p.Nut4Id
+LEFT JOIN lkpfruitandnuts n5 ON n5.Id = p.Nut5Id
+
+-- Sandwich
+LEFT JOIN lkpfruitandnuts s ON s.Id = p.SandwichId
+
+-- Jar
+LEFT JOIN lkpfruitandnuts j ON j.Id = p.JarId
+
+WHERE
+    p.PackageTypeId = :packageTypeId
+    AND p.WeekdayId = :weekdayId
+		""", nativeQuery = true)
+		List<Object[]> getPackStatusForCustomer(
+		    @Param("customerId") Long customerId,
+		    @Param("packageTypeId") Integer packageTypeId,
+		    @Param("weekdayId") Integer weekdayId
+		);
 }

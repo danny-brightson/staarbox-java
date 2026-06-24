@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -37,24 +38,31 @@ public class WalletService {
 	    );
 	}
 
-	    public BigDecimal getWalletBalance(Long customerId) {
+	   public BigDecimal getWalletBalance(Long customerId) {
 
-	        Optional<Wallet> walletOpt = walletRepository.findByCustomerId(customerId);
+    Optional<Wallet> walletOpt = walletRepository.findByCustomerId(customerId);
 
-	        // 🔹 If wallet exists
-	        if (walletOpt.isPresent()) {
+    // 🔹 If wallet exists
+    if (walletOpt.isPresent()) {
 
-	            BigDecimal amount = walletOpt.get().getAmount();
+        BigDecimal amount = walletOpt.get().getAmount();
 
-	            return amount != null ? amount : BigDecimal.ZERO;
-	        }
+        return amount != null ? amount : BigDecimal.ZERO;
+    }
 
-	        // 🔹 If wallet does NOT exist
-	        BigDecimal rate = customerDetailsRepo.findRateByCustomerId(customerId);
+    // 🔹 Check customer renewal date
+    LocalDate nextRenewalDate = customerDetailsRepo.findNextRenewalDateByCustomerId(customerId);
 
-	      
-	        return rate != null ? rate : BigDecimal.ZERO;
-	    }
+    // 🔹 If renewal expired and no wallet entry → return 0
+    if (nextRenewalDate == null || nextRenewalDate.isBefore(LocalDate.now())) {
+        return BigDecimal.ZERO;
+    }
+
+    // 🔹 If active customer but wallet not created yet → show package rate
+    BigDecimal rate = customerDetailsRepo.findRateByCustomerId(customerId);
+
+    return rate != null ? rate : BigDecimal.ZERO;
+}
 
 	public void customizeWallet(Long customerId, BigDecimal amount, LocalDateTime date) {
 

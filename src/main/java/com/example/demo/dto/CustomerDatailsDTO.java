@@ -38,9 +38,9 @@ public class CustomerDatailsDTO {
 
 	private Double longtitude;
 
-	private Boolean isEggPreferd;
+	private boolean isEggPreferd;
 	
-	private Boolean IsDiabetic;
+	private boolean IsDiabetic;
 	
 	// Billing Address
 	public String B_firstName;
@@ -63,7 +63,7 @@ public class CustomerDatailsDTO {
 	public CustomerDatailsDTO(String name, String mailId, Date dOB, String genderId, String addressLine1,
 			String addressLine2, String pinCode, int districtId, int stateId, String addressType, int delivaryTimingId,
 			boolean isPragnent, boolean isAllergic, String fruitstoAvoid, String phoneNumber, Double latitude,
-			Double longtitude, Boolean isEggPreferd, Boolean IsDiabetic, String b_firstName, String b_lastName,
+			Double longtitude, boolean isEggPreferd, boolean IsDiabetic, String b_firstName, String b_lastName,
 			String b_email, String b_phone, String b_address, String b_companyName, String b_gstNumber,
 			String b_landmark, String b_city, String b_state) {
 		super();
@@ -316,21 +316,21 @@ public class CustomerDatailsDTO {
 		B_state = b_state;
 	}
 
-	public Boolean getIsEggPreferd() {
+	public boolean getIsEggPreferd() {
 		return isEggPreferd;
 	}
 
-	public void setIsEggPreferd(Boolean isEggPreferd) {
+	public void setIsEggPreferd(boolean isEggPreferd) {
 		this.isEggPreferd = isEggPreferd;
 	}
 
 
-	public Boolean getIsDiabetic() {
+	public boolean getIsDiabetic() {
 		return IsDiabetic;
 	}
 
 
-	public void setIsDiabetic(Boolean isDiabetic) {
+	public void setIsDiabetic(boolean isDiabetic) {
 		IsDiabetic = isDiabetic;
 	}
 

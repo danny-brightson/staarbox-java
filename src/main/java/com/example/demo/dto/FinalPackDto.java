@@ -12,6 +12,7 @@ public class FinalPackDto {
 	private String numberCode;
 	private boolean isVerified;
 	private SimpleIngredient sandwich;
+	private SimpleIngredient jar;
 
 	public FinalPackDto() {
 		this.eggOrSeed = eggOrSeed;
@@ -22,6 +23,7 @@ public class FinalPackDto {
 		nuts = new ArrayList<>();
 		this.isVerified = isVerified;
 		this.sandwich = sandwich;
+		this.jar = jar;
 	}
 	
 
@@ -91,6 +93,16 @@ public class FinalPackDto {
 
 	public void setSandwich(SimpleIngredient sandwich) {
 		this.sandwich = sandwich;
+	}
+
+
+	public SimpleIngredient getJar() {
+		return jar;
+	}
+
+
+	public void setJar(SimpleIngredient jar) {
+		this.jar = jar;
 	}
 	
 
