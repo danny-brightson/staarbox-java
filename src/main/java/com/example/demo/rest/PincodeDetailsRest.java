@@ -33,9 +33,9 @@ public class PincodeDetailsRest {
 	}
 	
 	@GetMapping("/checkPromoCode")
-	public ResponseEntity<Map<String, Object>> checkPromoCode(@RequestParam String promoCode) {
+	public ResponseEntity<Map<String, Object>> checkPromoCode(@RequestParam String promoCode,@RequestParam Long customerId) {
 		System.out.println("Incoming promo code: " + promoCode);
-	    Map<String, Object> response = pincodeDetailsService.checkPromoCodeAvailability(promoCode);
+	    Map<String, Object> response = pincodeDetailsService.checkPromoCodeAvailability(promoCode,customerId);
 	    return ResponseEntity.ok(response);
 	}
 

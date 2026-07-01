@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.AvailablePromoCode;
+import com.example.demo.entity.CustomerPromo;
 import com.example.demo.entity.PaymentDetails;
 import com.example.demo.entity.Wallet;
 import com.example.demo.projection.CustomerPackDistrictProjection;
 import com.example.demo.repo.AvailablePromoCodeRepo;
 import com.example.demo.repo.CheckoutDataRepo;
 import com.example.demo.repo.CustomerDetailsRepo;
+import com.example.demo.repo.CustomerPromoRepository;
 import com.example.demo.repo.PaymentDetailsrepo;
 import com.example.demo.repo.PricePerPackDetailsRepository;
 import com.example.demo.repo.WalletRepository;
@@ -49,6 +51,10 @@ public class PaymentController {
 
 	@Autowired
 	private CheckoutDataRepo checkoutDataRepo;
+	
+	@Autowired
+	private CustomerPromoRepository customerPromoRepository;
+
 
 	@Autowired
 	private PricePerPackDetailsRepository pricePerPackDetailsRepo;
@@ -98,11 +104,19 @@ public class PaymentController {
 				payment.setStatus("SUCCESS");
 				paymentDetailsrepo.save(payment);
 				
-				if (promoCode!=null) {
-					Optional<AvailablePromoCode> promo = availablePromoCodeRepo.findValidPromo(promoCode);
-					if (!promo.isEmpty()&&promo.get().getDiscountPercentage()==100) {
-						int updatedRows = availablePromoCodeRepo.markPromoAsUsed(promoCode);
-					}
+				if (promoCode != null && !promoCode.isBlank()) {
+
+					AvailablePromoCode promo =
+				    		availablePromoCodeRepo.findValidPromo(promoCode)
+				                    .orElseThrow(() -> new RuntimeException("Promo not found"));
+
+				    CustomerPromo cp = new CustomerPromo();
+
+				    cp.setCustomerId(cusId.longValue());
+				    cp.setPromoCodeId(promo.getId());
+				    cp.setUsedDate(LocalDateTime.now());
+
+				    customerPromoRepository.save(cp);
 				}
 				Optional<Wallet> existingWallet = walletRepository.findByCustomerId(cusId.longValue());
 				BigDecimal walletBalance;

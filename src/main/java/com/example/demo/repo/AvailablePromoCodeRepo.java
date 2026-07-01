@@ -17,7 +17,7 @@ public interface AvailablePromoCodeRepo extends JpaRepository<AvailablePromoCode
 	
 	
 
-	@Query(value = "SELECT * FROM availablepromocode a WHERE a.PromoCode = :promoCode AND a.StatusId = 1", nativeQuery = true)
+	@Query(value = "SELECT * FROM availablepromocode a WHERE  LOWER(a.PromoCode) = LOWER(:promoCode) AND a.StatusId = 1", nativeQuery = true)
 	Optional<AvailablePromoCode> findValidPromo(@Param("promoCode") String promoCode);
 	
 	@Modifying
@@ -31,6 +31,8 @@ public interface AvailablePromoCodeRepo extends JpaRepository<AvailablePromoCode
 	@Modifying
 	@Query(value = "UPDATE availablepromocode SET IsValid = FALSE WHERE a.PromoCode = :code", nativeQuery = true)
 	void updateStatus(String promoCode);
+	
+	//Optional<AvailablePromoCode> findByPromoCodeIgnoreCase(String promoCode);
 
 	
 }
