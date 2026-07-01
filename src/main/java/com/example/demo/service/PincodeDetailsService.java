@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.entity.AvailablePromoCode;
 import com.example.demo.entity.PincodeDetails;
 import com.example.demo.repo.AvailablePromoCodeRepo;
+import com.example.demo.repo.CustomerDetailsRepo;
+import com.example.demo.repo.CustomerPromoRepository;
 import com.example.demo.repo.LkpAvailableDistrictRepo;
 import com.example.demo.repo.LkpAvailablePincodesRepo;
 import com.example.demo.repo.PincodeDetailsRepo;
@@ -32,6 +34,10 @@ public class PincodeDetailsService {
 	
 	@Autowired
 	private  LkpAvailablePincodesRepo lkpAvailablePincodesRepo;
+	
+	@Autowired
+	private CustomerPromoRepository customerPromoRepository;
+
 
 
 	public boolean CheckPinCodeAvailability(String pincode) throws IOException {
@@ -72,18 +78,55 @@ public class PincodeDetailsService {
 //		
 //	}
 	
-	public Map<String, Object> checkPromoCodeAvailability(String promoCode) {
-	    Optional<AvailablePromoCode> promo = availablePromoCodeRepo.findValidPromo(promoCode);
-	    Map<String, Object> result = new HashMap<>();
-	    if (promo.isPresent() && Boolean.TRUE.equals(promo.get().getIsValid())) {
-	        result.put("valid", true);
-	        result.put("discountPercentage", promo.get().getDiscountPercentage());
-	    } else {
-	        result.put("valid", false);
-	        result.put("discountPercentage", 0);
+//	public Map<String, Object> checkPromoCodeAvailability(String promoCode) {
+//	    Optional<AvailablePromoCode> promo = availablePromoCodeRepo.findValidPromo(promoCode);
+//	    Map<String, Object> result = new HashMap<>();
+//	    if (promo.isPresent() && Boolean.TRUE.equals(promo.get().getIsValid())) {
+//	        result.put("valid", true);
+//	        result.put("discountPercentage", promo.get().getDiscountPercentage());
+//	    } else {
+//	        result.put("valid", false);
+//	        result.put("discountPercentage", 0);
+//	    }
+//	    System.out.println(result);
+//	    return result;
+//	}
+	
+	public Map<String, Object> checkPromoCodeAvailability(
+	        String promoCode,
+	        Long customerId) {
+
+	    Map<String, Object> response = new HashMap<>();
+
+	    Optional<AvailablePromoCode> promo =
+	    		availablePromoCodeRepo.findValidPromo(promoCode);
+
+	    if (promo.isEmpty()) {
+
+	        response.put("success", false);
+	        response.put("message", "Invalid Promo Code");
+	        return response;
 	    }
-	    System.out.println(result);
-	    return result;
+
+	    AvailablePromoCode promoObj = promo.get();
+
+	    boolean alreadyUsed =
+	            customerPromoRepository.existsByCustomerIdAndPromoCodeId(
+	                    customerId,
+	                    promoObj.getId());
+
+	    if (alreadyUsed) {
+
+	        response.put("success", false);
+	        response.put("message", "You have already used this promo code.");
+	        return response;
+	    }
+
+	    response.put("success", true);
+	    response.put("discount", promoObj.getDiscountPercentage());
+	    response.put("promoCodeId", promoObj.getId());
+
+	    return response;
 	}
 
 
