@@ -179,7 +179,7 @@ public class CustomerDetails {
 	private LocalDate cancelRequestedDate;
 	
 	@Column(name = "IsDiabetic")
-	private boolean isDiabetic;
+	private Boolean isDiabetic;
 	
 	@Column(name = "StartDate")
 	private LocalDate startDate;
@@ -901,11 +901,11 @@ public class CustomerDetails {
 
 
 	public boolean getIsDiabetic() {
-		return isDiabetic;
+		return Boolean.TRUE.equals(isDiabetic);
 	}
 
 
-	public void setIsDiabetic(boolean isDiabetic) {
+	public void setIsDiabetic(Boolean isDiabetic) {
 		this.isDiabetic = isDiabetic;
 	}
 	
