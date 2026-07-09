@@ -14,17 +14,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+
+    /** One push per phone number for these types, even with multiple active customer profiles. */
+    private static final Set<String> ONCE_PER_PHONE_TYPES = Set.of(
+            MessageTemplates.TYPE_FOOD_READY,
+            MessageTemplates.TYPE_MORNING_DELIVERY,
+            MessageTemplates.TYPE_BREAKFAST_TIP,
+            MessageTemplates.TYPE_CUSTOMIZATION_OPEN,
+            MessageTemplates.TYPE_CUSTOMIZATION_REMINDER,
+            MessageTemplates.TYPE_LAST_REMINDER,
+            MessageTemplates.TYPE_CUSTOMIZATION_CLOSED);
 
     @Autowired
     private UserDeviceRepository userDeviceRepository;
@@ -44,6 +57,11 @@ public class NotificationService {
      */
     @Transactional
     public void sendToAllUsers(String title, String message, String notificationType) {
+        if (MessageTemplates.TYPE_DISPATCH.equalsIgnoreCase(notificationType)) {
+            logger.info("Dispatch notifications are disabled | type={}", notificationType);
+            return;
+        }
+
         List<UserDevice> allDevices = userDeviceRepository.findAllActiveDevices();
 
         if (allDevices.isEmpty()) {
@@ -51,8 +69,7 @@ public class NotificationService {
             return;
         }
 
-        // One physical device can be registered under multiple active customer profiles.
-        List<UserDevice> eligibleDevices = selectEligibleDevicesOncePerToken(allDevices, notificationType);
+        List<UserDevice> eligibleDevices = selectEligibleDevices(allDevices, notificationType);
 
         if (eligibleDevices.isEmpty()) {
             logger.info("No eligible devices after filtering | type={}", notificationType);
@@ -70,6 +87,11 @@ public class NotificationService {
      */
     @Transactional
     public void sendToUser(Long userId, String title, String message, String notificationType) {
+        if (MessageTemplates.TYPE_DISPATCH.equalsIgnoreCase(notificationType)) {
+            logger.info("Dispatch notifications are disabled | userId={}", userId);
+            return;
+        }
+
         List<UserDevice> devices = userDeviceRepository.findByUserIdAndIsActiveTrue(userId);
 
         if (devices.isEmpty()) {
@@ -239,10 +261,15 @@ public class NotificationService {
         return preferenceRepository.save(existing);
     }
 
-    private List<UserDevice> selectEligibleDevicesOncePerToken(
+    private List<UserDevice> selectEligibleDevices(
             List<UserDevice> devices,
             String notificationType) {
-        Map<String, UserDevice> bestDevicePerToken = new LinkedHashMap<>();
+        boolean dedupeByPhone = ONCE_PER_PHONE_TYPES.contains(notificationType.toLowerCase());
+        Map<Long, String> phoneByCustomerId = dedupeByPhone
+                ? loadPhoneNumbersByCustomerId(devices)
+                : Map.of();
+
+        Map<String, UserDevice> bestDevicePerKey = new LinkedHashMap<>();
 
         for (UserDevice device : devices) {
             if (device == null || !device.isActive()) {
@@ -258,13 +285,53 @@ public class NotificationService {
                 continue;
             }
 
-            UserDevice existing = bestDevicePerToken.get(token);
+            String dedupeKey = resolveDedupeKey(device, dedupeByPhone, phoneByCustomerId, token);
+            if (dedupeKey == null || dedupeKey.isBlank()) {
+                continue;
+            }
+
+            UserDevice existing = bestDevicePerKey.get(dedupeKey);
             if (existing == null || isPreferredDevice(device, existing)) {
-                bestDevicePerToken.put(token, device);
+                bestDevicePerKey.put(dedupeKey, device);
             }
         }
 
-        return new ArrayList<>(bestDevicePerToken.values());
+        return new ArrayList<>(bestDevicePerKey.values());
+    }
+
+    private String resolveDedupeKey(
+            UserDevice device,
+            boolean dedupeByPhone,
+            Map<Long, String> phoneByCustomerId,
+            String token) {
+        if (!dedupeByPhone) {
+            return token;
+        }
+        String phone = phoneByCustomerId.get(device.getUserId());
+        return phone != null && !phone.isBlank() ? phone : token;
+    }
+
+    private Map<Long, String> loadPhoneNumbersByCustomerId(List<UserDevice> devices) {
+        Set<Long> customerIds = devices.stream()
+                .map(UserDevice::getUserId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, String> phoneByCustomerId = new HashMap<>();
+        for (CustomerDetails customer : customerDetailsRepo.findAllById(customerIds)) {
+            if (customer.getId() != null && customer.getPhoneNumber() != null) {
+                phoneByCustomerId.put(customer.getId(), normalizePhone(customer.getPhoneNumber()));
+            }
+        }
+        return phoneByCustomerId;
+    }
+
+    private String normalizePhone(String phone) {
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.length() > 10) {
+            return digits.substring(digits.length() - 10);
+        }
+        return digits;
     }
 
     private boolean isPreferredDevice(UserDevice candidate, UserDevice current) {

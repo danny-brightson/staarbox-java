@@ -70,17 +70,7 @@ public class NotificationScheduler {
      */
     @Scheduled(cron = "0 30 6 * * ?", zone = "Asia/Kolkata")
     public void outForDispatch() {
-        logger.info("CRON triggered: Out for Dispatch - 6:30 AM");
-        if (!NotificationSchedulePolicy.shouldSendDeliveryNotifications()) {
-            logger.info("Skipping Out for Dispatch on Sunday (no delivery day)");
-            return;
-        }
-        try {
-            NotificationData data = MessageTemplates.getDispatch();
-            notificationService.sendToAllUsers(data.title, data.message, data.type);
-        } catch (Exception e) {
-            logger.error("Error in outForDispatch scheduler: {}", e.getMessage(), e);
-        }
+        logger.info("CRON skipped: Out for Dispatch disabled (meal on the move notification)");
     }
 
     /**

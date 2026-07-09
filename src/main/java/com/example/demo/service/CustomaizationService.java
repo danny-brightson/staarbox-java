@@ -286,18 +286,13 @@ public class CustomaizationService {
 					activeJars,
 					jarDailyPrices,
 					selectedJar,
-					true));
+					false));
 			return;
 		}
 
 		IngredientDto selectedJar = dto.getJar();
 		dto.setNuts(removeJarIngredients(dto.getNuts()));
-		dto.setOptionals(appendJarOptionals(
-				removeJarOptionals(dto.getOptionals()),
-				activeJars,
-				jarDailyPrices,
-				selectedJar,
-				false));
+		dto.setOptionals(removeJarOptionals(dto.getOptionals()));
 
 		if (selectedJar != null && selectedJar.getId() != null) {
 			enrichJarWithMacros(selectedJar, activeJars, jarDailyPrices);
